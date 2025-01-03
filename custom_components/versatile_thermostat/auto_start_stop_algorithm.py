@@ -1,12 +1,12 @@
 # pylint: disable=line-too-long
-""" This file implements the Auto start/stop algorithm as described here: https://github.com/jmcollin78/versatile_thermostat/issues/585
+""" This file implements the Auto start/stop algorithm as described here:
+ https://github.com/jmcollin78/versatile_thermostat/issues/585
 """
 
 import logging
 from datetime import datetime
-from typing import Literal
 
-from homeassistant.components.climate import HVACMode
+from homeassistant.components.climate.const import HVACMode
 
 from .const import (
     AUTO_START_STOP_LEVEL_NONE,
@@ -34,28 +34,21 @@ CYCLE_SEC = 120
 TEMP_HYSTERESIS = 0.5
 
 ERROR_THRESHOLD = {
-    AUTO_START_STOP_LEVEL_NONE: 0,  # Not used
-    AUTO_START_STOP_LEVEL_SLOW: 10,  # 10 cycle above 1° or 5 cycle above 2°, ...
-    AUTO_START_STOP_LEVEL_MEDIUM: 5,  # 5 cycle above 1° or 3 cycle above 2°, ..., 1 cycle above 5°
-    AUTO_START_STOP_LEVEL_FAST: 2,  # 2 cycle above 1° or 1 cycle above 2°
+    AUTO_START_STOP_LEVEL_NONE: 0,      # Not used
+    AUTO_START_STOP_LEVEL_SLOW: 10,     # 10 cycle above 1° or 5 cycle above 2°, ...
+    AUTO_START_STOP_LEVEL_MEDIUM: 5,    # 5 cycle above 1° #
+                                        # or 3 cycle above 2°, ..., 1 cycle above 5°
+    AUTO_START_STOP_LEVEL_FAST: 2,      # 2 cycle above 1° or 1 cycle above 2°
 }
 
-AUTO_START_STOP_ACTION_OFF = "turnOff"
-AUTO_START_STOP_ACTION_ON = "turnOn"
-AUTO_START_STOP_ACTION_NOTHING = "nothing"
-AUTO_START_STOP_ACTIONS = Literal[  # pylint: disable=invalid-name
-    AUTO_START_STOP_ACTION_OFF,
-    AUTO_START_STOP_ACTION_ON,
-    AUTO_START_STOP_ACTION_NOTHING,
-]
 
 class AutoStartStopDetectionAlgorithm:
     """The class that implements the algorithm listed above"""
 
-    _dt: float | None = None
+    _dt: float
     _level: str = AUTO_START_STOP_LEVEL_NONE
     _accumulated_error: float = 0
-    _error_threshold: float | None = None
+    _error_threshold: float = ERROR_THRESHOLD[AUTO_START_STOP_LEVEL_NONE]
     _last_calculation_date: datetime | None = None
     _last_switch_date: datetime | None = None
 
@@ -72,7 +65,7 @@ class AutoStartStopDetectionAlgorithm:
             return
 
         self._level = level
-        if self._level != AUTO_START_STOP_LEVEL_NONE:
+        if self._level != AUTO_START_STOP_LEVEL.NONE:
             self._dt = DT_MIN[level]
             self._error_threshold = ERROR_THRESHOLD[level]
             # reset accumulated error if we change the level
@@ -84,19 +77,20 @@ class AutoStartStopDetectionAlgorithm:
         saved_hvac_mode: HVACMode | None,
         target_temp: float,
         current_temp: float,
-        slope_min: float | None,
+        slope_min: float,
         now: datetime,
-    ) -> AUTO_START_STOP_ACTIONS:
+    ) -> AUTO_START_STOP_ACTION:
         """Calculate an eventual action to do depending of the value in parameter"""
         if self._level == AUTO_START_STOP_LEVEL_NONE:
             _LOGGER.debug(
                 "%s - auto-start/stop is disabled",
                 self,
             )
-            return AUTO_START_STOP_ACTION_NOTHING
+            return AUTO_START_STOP_ACTION.NONE
 
         _LOGGER.debug(
-            "%s - calculate_action: hvac_mode=%s, saved_hvac_mode=%s, target_temp=%s, current_temp=%s, slope_min=%s at %s",
+            "%s - calculate_action: hvac_mode=%s, saved_hvac_mode=%s, "
+            "target_temp=%s, current_temp=%s, slope_min=%s at %s",
             self,
             hvac_mode,
             saved_hvac_mode,
@@ -108,10 +102,10 @@ class AutoStartStopDetectionAlgorithm:
 
         if hvac_mode is None or target_temp is None or current_temp is None:
             _LOGGER.debug(
-                "%s - No all mandatory parameters are set. Disable auto-start/stop",
+                "%s - Not all mandatory parameters are set. Disable auto-start/stop",
                 self,
             )
-            return AUTO_START_STOP_ACTION_NOTHING
+            return AUTO_START_STOP_ACTION.NONE
 
         # Calculate the error factor (P)
         error = target_temp - current_temp
@@ -122,12 +116,13 @@ class AutoStartStopDetectionAlgorithm:
             # ignore two calls too near (< 24 sec)
             if dtmin <= 0.2:
                 _LOGGER.debug(
-                    "%s - new calculation of auto_start_stop (%s) is too near of the last one (%s). Forget it",
+                    "%s - new calculation of auto_start_stop (%s) "
+                    "is too near to the last one (%s). Forget it",
                     self,
                     now,
                     self._last_calculation_date,
                 )
-                return AUTO_START_STOP_ACTION_NOTHING
+                return AUTO_START_STOP_ACTION.NONE
             error = error * dtmin
 
         # If the error have change its sign, reset smoothly the accumulated error
@@ -162,14 +157,14 @@ class AutoStartStopDetectionAlgorithm:
                 and nb_minutes_since_last_switch >= self._dt
             ):
                 _LOGGER.info(
-                    "%s - We need to stop, there is no need for heating for a long time.",
+                    "%s - We need to stop, heating will not be needed for a long time.",
                     self,
                 )
                 self._last_switch_date = now
-                return AUTO_START_STOP_ACTION_OFF
+                return AUTO_START_STOP_ACTION.OFF
             else:
                 _LOGGER.debug("%s - nothing to do, we are heating", self)
-                return AUTO_START_STOP_ACTION_NOTHING
+                return AUTO_START_STOP_ACTION.NONE
 
         if hvac_mode == HVACMode.COOL:
             if (
@@ -178,17 +173,17 @@ class AutoStartStopDetectionAlgorithm:
                 and nb_minutes_since_last_switch >= self._dt
             ):
                 _LOGGER.info(
-                    "%s - We need to stop, there is no need for cooling for a long time.",
+                    "%s - We need to stop, cooling will not be needed for a long time.",
                     self,
                 )
                 self._last_switch_date = now
-                return AUTO_START_STOP_ACTION_OFF
+                return AUTO_START_STOP_ACTION.OFF
             else:
                 _LOGGER.debug(
                     "%s - nothing to do, we are cooling",
                     self,
                 )
-                return AUTO_START_STOP_ACTION_NOTHING
+                return AUTO_START_STOP_ACTION.NONE
 
         # check to turn on
         if hvac_mode == HVACMode.OFF and saved_hvac_mode == HVACMode.HEAT:
@@ -201,14 +196,13 @@ class AutoStartStopDetectionAlgorithm:
                     self,
                 )
                 self._last_switch_date = now
-                return AUTO_START_STOP_ACTION_ON
+                return AUTO_START_STOP_ACTION.ON
             else:
                 _LOGGER.debug(
                     "%s - nothing to do, we don't need to heat soon",
                     self,
                 )
-                return AUTO_START_STOP_ACTION_NOTHING
-
+                return AUTO_START_STOP_ACTION.NONE
         if hvac_mode == HVACMode.OFF and saved_hvac_mode == HVACMode.COOL:
             if (
                 temp_at_dt >= target_temp + TEMP_HYSTERESIS
@@ -219,19 +213,19 @@ class AutoStartStopDetectionAlgorithm:
                     self,
                 )
                 self._last_switch_date = now
-                return AUTO_START_STOP_ACTION_ON
+                return AUTO_START_STOP_ACTION.ON
             else:
                 _LOGGER.debug(
                     "%s - nothing to do, we don't need to cool soon",
                     self,
                 )
-                return AUTO_START_STOP_ACTION_NOTHING
+                return AUTO_START_STOP_ACTION.NONE
 
         _LOGGER.debug(
             "%s - nothing to do, no conditions applied",
             self,
         )
-        return AUTO_START_STOP_ACTION_NOTHING
+        return AUTO_START_STOP_ACTION.NONE
 
     def set_level(self, level: TYPE_AUTO_START_STOP_LEVELS):
         """Set a new level"""

@@ -17,8 +17,7 @@ from .base_manager import BaseFeatureManager
 
 from .auto_start_stop_algorithm import (
     AutoStartStopDetectionAlgorithm,
-    AUTO_START_STOP_ACTION_OFF,
-    AUTO_START_STOP_ACTION_ON,
+    AUTO_START_STOP_ACTION
 )
 
 
@@ -103,7 +102,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
             self._vtherm.now,
         )
         _LOGGER.debug("%s - auto_start_stop action is %s", self, action)
-        if action == AUTO_START_STOP_ACTION_OFF and self._vtherm.is_on:
+        if action == AUTO_START_STOP_ACTION.OFF and self._vtherm.is_on:
             _LOGGER.info(
                 "%s - Turning OFF the Vtherm due to auto-start-stop conditions",
                 self,
@@ -131,7 +130,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
             # Stop here
             return False
         elif (
-            action == AUTO_START_STOP_ACTION_ON
+            action == AUTO_START_STOP_ACTIONS.ON
             and self._vtherm.hvac_off_reason == HVAC_OFF_REASON_AUTO_START_STOP
         ):
             _LOGGER.info(

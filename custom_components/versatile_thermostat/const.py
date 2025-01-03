@@ -176,12 +176,28 @@ CONF_AUTO_START_STOP_LEVELS = [
 ]
 
 # For explicit typing purpose only
-TYPE_AUTO_START_STOP_LEVELS = Literal[  # pylint: disable=invalid-name
-    AUTO_START_STOP_LEVEL_FAST,
-    AUTO_START_STOP_LEVEL_MEDIUM,
-    AUTO_START_STOP_LEVEL_SLOW,
-    AUTO_START_STOP_LEVEL_NONE,
-]
+# TYPE_AUTO_START_STOP_LEVELS = Literal[  # pylint: disable=invalid-name
+#     AUTO_START_STOP_LEVEL_FAST,
+#     AUTO_START_STOP_LEVEL_MEDIUM,
+#     AUTO_START_STOP_LEVEL_SLOW,
+#     AUTO_START_STOP_LEVEL_NONE,
+# ]
+
+
+class AUTO_START_STOP_LEVEL(Enum):
+    FAST = 3,
+    MEDIUM = 2,
+    SLOW = 1,
+    NONE = 0
+
+
+class AUTO_START_STOP_ACTION(Enum):
+    """Enum holding the possible thermostat actions"""
+
+    OFF = 0,
+    ON = 1,
+    NONE = 2,
+
 
 HVAC_OFF_REASON_NAME = "hvac_off_reason"
 HVAC_OFF_REASON_MANUAL = "manual"
