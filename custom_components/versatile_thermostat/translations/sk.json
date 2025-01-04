@@ -87,7 +87,7 @@
           "valve_entity4_id": "4. ventil číslo",
           "auto_regulation_mode": "Samoregulácia",
           "auto_regulation_dtemp": "Regulačný prah",
-          "auto_regulation_periode_min": "Regulačné minimálne obdobie",
+          "auto_regulation_period_min": "Regulačné minimálne obdobie",
           "auto_regulation_use_device_temp": "Použite vnútornú teplotu podkladu",
           "inverse_switch_command": "Inverzný prepínací príkaz",
           "auto_fan_mode": "Režim automatického ventilátora"
@@ -110,7 +110,7 @@
           "valve_entity4_id": "4. ventil číslo entity id",
           "auto_regulation_mode": "Automatické nastavenie cieľovej teploty",
           "auto_regulation_dtemp": "Hranica v °, pod ktorou sa zmena teploty neodošle",
-          "auto_regulation_periode_min": "Trvanie v minútach medzi dvoma aktualizáciami predpisov",
+          "auto_regulation_period_min": "Trvanie v minútach medzi dvoma aktualizáciami predpisov",
           "auto_regulation_use_device_temp": "Na urýchlenie samoregulácie použite prípadný vnútorný snímač teploty podkladu",
           "inverse_switch_command": "V prípade spínača s pilotným vodičom a diódou možno budete musieť príkaz invertovať",
           "auto_fan_mode": "Automaticky aktivujte ventilátor, keď je potrebné veľké vykurovanie/chladenie"
@@ -322,7 +322,7 @@
           "valve_entity4_id": "4. ventil číslo",
           "auto_regulation_mode": "Samoregulácia",
           "auto_regulation_dtemp": "Regulačný prah",
-          "auto_regulation_periode_min": "Regulačné minimálne obdobie",
+          "auto_regulation_period_min": "Regulačné minimálne obdobie",
           "auto_regulation_use_device_temp": "Použite vnútornú teplotu podkladu",
           "inverse_switch_command": "Inverzný prepínací príkaz",
           "auto_fan_mode": "Režim automatického ventilátora"
@@ -345,7 +345,7 @@
           "valve_entity4_id": "4. ventil číslo entity id",
           "auto_regulation_mode": "Automatické nastavenie cieľovej teploty",
           "auto_regulation_dtemp": "Hranica v °, pod ktorou sa zmena teploty neodošle",
-          "auto_regulation_periode_min": "Trvanie v minútach medzi dvoma aktualizáciami predpisov",
+          "auto_regulation_period_min": "Trvanie v minútach medzi dvoma aktualizáciami predpisov",
           "auto_regulation_use_device_temp": "Na urýchlenie samoregulácie použite prípadný vnútorný snímač teploty podkladu",
           "inverse_switch_command": "V prípade spínača s pilotným vodičom a diódou možno budete musieť príkaz invertovať",
           "auto_fan_mode": "Automaticky aktivujte ventilátor, keď je potrebné veľké vykurovanie/chladenie"
