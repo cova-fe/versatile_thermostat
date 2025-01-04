@@ -3,15 +3,14 @@
 
 import logging
 import math
-from typing import Literal
 
 from datetime import datetime
 
-from enum import Enum
+from enum import Enum, StrEnum
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_NAME, Platform
 
-from homeassistant.components.climate import (
+from homeassistant.components.climate.const import (
     # PRESET_ACTIVITY,
     PRESET_BOOST,
     PRESET_COMFORT,
@@ -164,17 +163,17 @@ CONF_USED_BY_CENTRAL_BOILER = "used_by_controls_central_boiler"
 CONF_WINDOW_ACTION = "window_action"
 
 CONF_AUTO_START_STOP_LEVEL = "auto_start_stop_level"
-AUTO_START_STOP_LEVEL_NONE = "auto_start_stop_none"
-AUTO_START_STOP_LEVEL_SLOW = "auto_start_stop_slow"
-AUTO_START_STOP_LEVEL_MEDIUM = "auto_start_stop_medium"
-AUTO_START_STOP_LEVEL_FAST = "auto_start_stop_fast"
-CONF_AUTO_START_STOP_LEVELS = [
-    AUTO_START_STOP_LEVEL_NONE,
-    AUTO_START_STOP_LEVEL_SLOW,
-    AUTO_START_STOP_LEVEL_MEDIUM,
-    AUTO_START_STOP_LEVEL_FAST,
-]
-
+# AUTO_START_STOP_LEVEL_NONE = "auto_start_stop_none"
+# AUTO_START_STOP_LEVEL_SLOW = "auto_start_stop_slow"
+# AUTO_START_STOP_LEVEL_MEDIUM = "auto_start_stop_medium"
+# AUTO_START_STOP_LEVEL_FAST = "auto_start_stop_fast"
+# class CONF_AUTO_START_STOP_LEVELS =
+#     AUTO_START_STOP_LEVEL_NONE,
+#     AUTO_START_STOP_LEVEL_SLOW,
+#     AUTO_START_STOP_LEVEL_MEDIUM,
+#     AUTO_START_STOP_LEVEL_FAST,
+# ]
+#
 # For explicit typing purpose only
 # TYPE_AUTO_START_STOP_LEVELS = Literal[  # pylint: disable=invalid-name
 #     AUTO_START_STOP_LEVEL_FAST,
@@ -184,30 +183,37 @@ CONF_AUTO_START_STOP_LEVELS = [
 # ]
 
 
-class AUTO_START_STOP_LEVEL(Enum):
-    FAST = 3,
-    MEDIUM = 2,
-    SLOW = 1,
-    NONE = 0
+class AUTO_START_STOP_LEVEL(StrEnum):
+    FAST = "auto_start_stop_fast"
+    MEDIUM = "auto_start_stop_medium"
+    SLOW = "auto_start_stop_slow"
+    NONE = "auto_start_stop_none"
 
 
-class AUTO_START_STOP_ACTION(Enum):
+class AUTO_START_STOP_ACTION(StrEnum):
     """Enum holding the possible thermostat actions"""
 
-    OFF = 0,
-    ON = 1,
-    NONE = 2,
+    OFF = "off"
+    ON = "on"
+    NONE = "none"
 
 
 HVAC_OFF_REASON_NAME = "hvac_off_reason"
-HVAC_OFF_REASON_MANUAL = "manual"
-HVAC_OFF_REASON_AUTO_START_STOP = "auto_start_stop"
-HVAC_OFF_REASON_WINDOW_DETECTION = "window_detection"
-HVAC_OFF_REASONS = Literal[  # pylint: disable=invalid-name
-    HVAC_OFF_REASON_MANUAL,
-    HVAC_OFF_REASON_AUTO_START_STOP,
-    HVAC_OFF_REASON_WINDOW_DETECTION,
-]
+# HVAC_OFF_REASON_MANUAL = "manual"
+# HVAC_OFF_REASON_AUTO_START_STOP = "auto_start_stop"
+# HVAC_OFF_REASON_WINDOW_DETECTION = "window_detection"
+# HVAC_OFF_REASONS = Literal[  # pylint: disable=invalid-name
+#     HVAC_OFF_REASON_MANUAL,
+#     HVAC_OFF_REASON_AUTO_START_STOP,
+#     HVAC_OFF_REASON_WINDOW_DETECTION,
+# ]
+
+
+class HVAC_OFF_REASONS(StrEnum):
+    MANUAL = "manual"
+    AUTO_START_STOP = "auto_start_stop"
+    WINDOW_DETECTION = "window_detection"
+
 
 DEFAULT_SHORT_EMA_PARAMS = {
     "max_alpha": 0.5,
@@ -372,17 +378,25 @@ CONF_AUTO_FAN_MODES = [
     CONF_AUTO_FAN_TURBO,
 ]
 
-CONF_WINDOW_TURN_OFF = "window_turn_off"
-CONF_WINDOW_FAN_ONLY = "window_fan_only"
-CONF_WINDOW_FROST_TEMP = "window_frost_temp"
-CONF_WINDOW_ECO_TEMP = "window_eco_temp"
+# CONF_WINDOW_TURN_OFF = "window_turn_off"
+# CONF_WINDOW_FAN_ONLY = "window_fan_only"
+# CONF_WINDOW_FROST_TEMP = "window_frost_temp"
+# CONF_WINDOW_ECO_TEMP = "window_eco_temp"
 
-CONF_WINDOW_ACTIONS = [
-    CONF_WINDOW_TURN_OFF,
-    CONF_WINDOW_FAN_ONLY,
-    CONF_WINDOW_FROST_TEMP,
-    CONF_WINDOW_ECO_TEMP,
-]
+# CONF_WINDOW_ACTIONS = [
+#     CONF_WINDOW_TURN_OFF,
+#     CONF_WINDOW_FAN_ONLY,
+#     CONF_WINDOW_FROST_TEMP,
+#     CONF_WINDOW_ECO_TEMP,
+# ]
+
+
+class CONF_WINDOW_ACTIONS(StrEnum):
+    TURN_OFF = "window_turn_off"
+    FAN_ONLY = "window_fan_only"
+    FROST_TEMP = "window_frost_temp"
+    ECO_TEMP = "window_eco_temp"
+
 
 SUPPORT_FLAGS = (
     ClimateEntityFeature.TARGET_TEMPERATURE
@@ -408,36 +422,50 @@ AUTO_FAN_DEACTIVATED_MODES = ["mute", "auto", "low"]
 
 CENTRAL_CONFIG_NAME = "Central configuration"
 
-CENTRAL_MODE_AUTO = "Auto"
-CENTRAL_MODE_STOPPED = "Stopped"
-CENTRAL_MODE_HEAT_ONLY = "Heat only"
-CENTRAL_MODE_COOL_ONLY = "Cool only"
-CENTRAL_MODE_FROST_PROTECTION = "Frost protection"
-CENTRAL_MODES = [
-    CENTRAL_MODE_AUTO,
-    CENTRAL_MODE_STOPPED,
-    CENTRAL_MODE_HEAT_ONLY,
-    CENTRAL_MODE_COOL_ONLY,
-    CENTRAL_MODE_FROST_PROTECTION,
-]
+# CENTRAL_MODE_AUTO = "Auto"
+# CENTRAL_MODE_STOPPED = "Stopped"
+# CENTRAL_MODE_HEAT_ONLY = "Heat only"
+# CENTRAL_MODE_COOL_ONLY = "Cool only"
+# CENTRAL_MODE_FROST_PROTECTION = "Frost protection"
+# CENTRAL_MODES = [
+#     CENTRAL_MODE_AUTO,
+#     CENTRAL_MODE_STOPPED,
+#     CENTRAL_MODE_HEAT_ONLY,
+#     CENTRAL_MODE_COOL_ONLY,
+#     CENTRAL_MODE_FROST_PROTECTION,
+# ]
 
 
-#  A special regulation parameter suggested by @Maia here: https://github.com/jmcollin78/versatile_thermostat/discussions/154
+class CENTRAL_MODES(StrEnum):
+    AUTO = "Auto"
+    STOPPED = "Stopped"
+    HEAT_ONLY = "Heat only"
+    COOL_ONLY = "Cool only"
+    FROST_PROTECTION = "Frost protection"
+
+
+# A special regulation parameter suggested by @Maia here:
+# https://github.com/jmcollin78/versatile_thermostat/discussions/154
 class RegulationParamSlow:
     """Light parameters for slow latency regulation"""
 
     kp: float = (
-        0.2  # 20% of the current internal regulation offset are caused by the current difference of target temperature and room temperature
+        0.2     # 20% of the current internal regulation offset are caused
+                # by the current difference of target temperature and room temperature
     )
     ki: float = (
-        0.8 / 288.0
-    )  # 80% of the current internal regulation offset are caused by the average offset of the past 24 hours
+        0.8 / 288.0   # 80% of the current internal regulation offset are
+                      # caused by the average offset of the past 24 hours
+    )
     k_ext: float = (
-        1.0 / 25.0
-    )  # this will add 1°C to the offset when it's 25°C colder outdoor than indoor
+        1.0 / 25.0  # this will add 1°C to the offset when it's 25°C
+                    # colder outdoor than indoor
+    )
     offset_max: float = 2.0  # limit to a final offset of -2°C to +2°C
     stabilization_threshold: float = (
-        0.0  # this needs to be disabled as otherwise the long term accumulated error will always be reset when the temp briefly crosses from/to below/above the target
+        0.0     # this needs to be disabled as otherwise the long term accumulated
+                # error will always be reset when the temp briefly crosses
+                # from/to below/above the target
     )
     accumulated_error_threshold: float = (
         2.0 * 288
@@ -543,7 +571,7 @@ class NowClass:
     @staticmethod
     def get_now(hass: HomeAssistant) -> datetime:
         """A test function to get the now.
-        For testing purpose this method can be overriden to get a specific
+        For testing purpose this method can be overridden to get a specific
         timestamp.
         """
         return datetime.now(get_tz(hass))
@@ -558,7 +586,8 @@ class WindowOpenDetectionMethod(HomeAssistantError):
 
 
 class NoCentralConfig(HomeAssistantError):
-    """Error to indicate that we try to use a central configuration but no VTherm of type CENTRAL CONFIGURATION has been found"""
+    """Error to indicate that we try to use a central configuration but no
+    VTherm of type CENTRAL CONFIGURATION has been found"""
 
 
 class ServiceConfigurationError(HomeAssistantError):
@@ -570,12 +599,13 @@ class ConfigurationNotCompleteError(HomeAssistantError):
 
 
 class ValveRegulationNbEntitiesIncorrect(HomeAssistantError):
-    """Error to indicate there is an error in the configuration of the TRV with valve regulation.
-    The number of specific entities is incorrect."""
+    """Error to indicate there is an error in the configuration of the TRV with
+    valve regulation. The number of specific entities is incorrect."""
 
 
 class ValveRegulationMinOpeningDegreesIncorrect(HomeAssistantError):
-    """Error to indicate that the minimal opening degrees is not a list of int separated by coma"""
+    """Error to indicate that the minimal opening degrees is not a list of
+    int separated by comma"""
 
 
 class overrides:  # pylint: disable=invalid-name
@@ -587,5 +617,5 @@ class overrides:  # pylint: disable=invalid-name
     def __get__(self, instance, owner):
         return self.func.__get__(instance, owner)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self):
         raise RuntimeError(f"Method {self.func.__name__} should have been overridden")

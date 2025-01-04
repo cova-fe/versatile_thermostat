@@ -5,27 +5,27 @@
 
 import logging
 from datetime import datetime
+from enum import Enum
 
 from homeassistant.components.climate.const import HVACMode
 
 from .const import (
-    AUTO_START_STOP_LEVEL_NONE,
-    AUTO_START_STOP_LEVEL_FAST,
-    AUTO_START_STOP_LEVEL_MEDIUM,
-    AUTO_START_STOP_LEVEL_SLOW,
-    TYPE_AUTO_START_STOP_LEVELS,
+    AUTO_START_STOP_LEVEL,
+    AUTO_START_STOP_ACTION,
 )
 
 
 _LOGGER = logging.getLogger(__name__)
 
 # Some constant to make algorithm depending of level
-DT_MIN = {
-    AUTO_START_STOP_LEVEL_NONE: 0,  # Not used
-    AUTO_START_STOP_LEVEL_SLOW: 30,
-    AUTO_START_STOP_LEVEL_MEDIUM: 15,
-    AUTO_START_STOP_LEVEL_FAST: 7,
-}
+
+
+class DT_MIN(float, Enum):
+    NONE = 0  # Not used
+    SLOW = 30
+    MEDIUM = 15
+    FAST = 7
+
 
 # the measurement cycle (2 min)
 CYCLE_SEC = 120
@@ -33,41 +33,48 @@ CYCLE_SEC = 120
 # A temp hysteresis to avoid rapid OFF/ON
 TEMP_HYSTERESIS = 0.5
 
-ERROR_THRESHOLD = {
-    AUTO_START_STOP_LEVEL_NONE: 0,      # Not used
-    AUTO_START_STOP_LEVEL_SLOW: 10,     # 10 cycle above 1° or 5 cycle above 2°, ...
-    AUTO_START_STOP_LEVEL_MEDIUM: 5,    # 5 cycle above 1° #
-                                        # or 3 cycle above 2°, ..., 1 cycle above 5°
-    AUTO_START_STOP_LEVEL_FAST: 2,      # 2 cycle above 1° or 1 cycle above 2°
-}
+
+class ERROR_THRESHOLD(float, Enum):
+    NONE = 0  # Not used
+    SLOW = 10  # 10 cycle above 1° or 5 cycle above 2°, ...
+    MEDIUM = 5  # 5 cycle above 1° or 3 cycle above 2°, ..., 1 cycle above 5°
+    FAST = 2  # 2 cycle above 1° or 1 cycle above 2°
+
+# ERROR_THRESHOLD = {
+#     AUTO_START_STOP_LEVEL_NONE: 0,      # Not used
+#     AUTO_START_STOP_LEVEL_SLOW: 10,     # 10 cycle above 1° or 5 cycle above 2°, ...
+#     AUTO_START_STOP_LEVEL_MEDIUM: 5,    # 5 cycle above 1° #
+#                                         # or 3 cycle above 2°, ..., 1 cycle above 5°
+#     AUTO_START_STOP_LEVEL_FAST: 2,      # 2 cycle above 1° or 1 cycle above 2°
+# }
 
 
 class AutoStartStopDetectionAlgorithm:
     """The class that implements the algorithm listed above"""
 
     _dt: float
-    _level: str = AUTO_START_STOP_LEVEL_NONE
+    _level: str = AUTO_START_STOP_LEVEL.NONE
     _accumulated_error: float = 0
-    _error_threshold: float = ERROR_THRESHOLD[AUTO_START_STOP_LEVEL_NONE]
+    _error_threshold: float = ERROR_THRESHOLD.NONE
     _last_calculation_date: datetime | None = None
     _last_switch_date: datetime | None = None
 
-    def __init__(self, level: TYPE_AUTO_START_STOP_LEVELS, vtherm_name) -> None:
-        """Initalize a new algorithm with the right constants"""
+    def __init__(self, level: AUTO_START_STOP_LEVEL, vtherm_name) -> None:
+        """Initialize a new algorithm with the right constants"""
         self._vtherm_name = vtherm_name
         self._last_calculation_date = None
         self._last_switch_date = None
         self._init_level(level)
 
-    def _init_level(self, level: TYPE_AUTO_START_STOP_LEVELS):
+    def _init_level(self, level: AUTO_START_STOP_LEVEL):
         """Initialize a new level"""
         if level == self._level:
             return
 
         self._level = level
         if self._level != AUTO_START_STOP_LEVEL.NONE:
-            self._dt = DT_MIN[level]
-            self._error_threshold = ERROR_THRESHOLD[level]
+            self._dt = DT_MIN[AUTO_START_STOP_LEVEL(level).name]
+            self._error_threshold = ERROR_THRESHOLD[AUTO_START_STOP_LEVEL(level).name]
             # reset accumulated error if we change the level
             self._accumulated_error = 0
 
@@ -81,7 +88,7 @@ class AutoStartStopDetectionAlgorithm:
         now: datetime,
     ) -> AUTO_START_STOP_ACTION:
         """Calculate an eventual action to do depending of the value in parameter"""
-        if self._level == AUTO_START_STOP_LEVEL_NONE:
+        if self._level == AUTO_START_STOP_LEVEL.NONE:
             _LOGGER.debug(
                 "%s - auto-start/stop is disabled",
                 self,
@@ -227,7 +234,7 @@ class AutoStartStopDetectionAlgorithm:
         )
         return AUTO_START_STOP_ACTION.NONE
 
-    def set_level(self, level: TYPE_AUTO_START_STOP_LEVELS):
+    def set_level(self, level: AUTO_START_STOP_LEVEL):
         """Set a new level"""
         self._init_level(level)
 
@@ -247,9 +254,9 @@ class AutoStartStopDetectionAlgorithm:
         return self._error_threshold
 
     @property
-    def level(self) -> TYPE_AUTO_START_STOP_LEVELS:
+    def level(self) -> str:
         """Get the level value"""
-        return self._level
+        return AUTO_START_STOP_LEVEL(self._level).name
 
     @property
     def last_switch_date(self) -> datetime | None:
