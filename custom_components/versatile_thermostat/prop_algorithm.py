@@ -1,4 +1,5 @@
 """ The TPI calculation module """
+
 # pylint: disable='line-too-long'
 import logging
 

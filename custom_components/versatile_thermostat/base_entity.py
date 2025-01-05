@@ -115,5 +115,5 @@ class VersatileThermostatBaseEntity(Entity):
         self, event: Event
     ):  # pylint: disable=unused-argument
         """Called when my climate have change
-        This method aims to be overridden to take the status change """
+        This method aims to be overridden to take the status change"""
         return

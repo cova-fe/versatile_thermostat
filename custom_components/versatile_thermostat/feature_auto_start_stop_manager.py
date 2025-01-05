@@ -17,8 +17,6 @@ from .const import (
     CONF_AUTO_START_STOP_LEVEL,
     HVAC_OFF_REASON,
     EventType,
-
-
 )  # pylint: disable=wildcard-import, unused-wildcard-import
 from .commons import ConfigData
 
@@ -50,9 +48,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
         """Init of a featureManager"""
         super().__init__(vtherm, hass)
 
-        self._auto_start_stop_level: AUTO_START_STOP_LEVEL = (
-            AUTO_START_STOP_LEVEL.NONE
-        )
+        self._auto_start_stop_level: AUTO_START_STOP_LEVEL = AUTO_START_STOP_LEVEL.NONE
         self._auto_start_stop_algo: AutoStartStopDetectionAlgorithm
         self._is_configured: bool = False
         self._is_auto_start_stop_enabled: bool = False
@@ -130,8 +126,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
                     "current_temperature": self._vtherm.current_temperature,
                     "temperature_slope": round(slope, 3),
                     "accumulated_error": self._auto_start_stop_algo.accumulated_error,
-                    "accumulated_error_threshold":
-                        self._auto_start_stop_algo.accumulated_error_threshold,
+                    "accumulated_error_threshold": self._auto_start_stop_algo.accumulated_error_threshold,
                 },
             )
 
@@ -159,8 +154,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
                     "current_temperature": self._vtherm.current_temperature,
                     "temperature_slope": round(slope, 3),
                     "accumulated_error": self._auto_start_stop_algo.accumulated_error,
-                    "accumulated_error_threshold":
-                        self._auto_start_stop_algo.accumulated_error_threshold,
+                    "accumulated_error_threshold": self._auto_start_stop_algo.accumulated_error_threshold,
                 },
             )
 
@@ -196,8 +190,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
                         self._vtherm.last_temperature_slope or 0, 3
                     ),
                     "accumulated_error": self._auto_start_stop_algo.accumulated_error,
-                    "accumulated_error_threshold":
-                        self._auto_start_stop_algo.accumulated_error_threshold,
+                    "accumulated_error_threshold": self._auto_start_stop_algo.accumulated_error_threshold,
                 },
             )
 
@@ -216,12 +209,9 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
                     "auto_start_stop_enable": self.auto_start_stop_enable,
                     "auto_start_stop_level": self._auto_start_stop_algo.level,
                     "auto_start_stop_dtmin": self._auto_start_stop_algo.dt_min,
-                    "auto_start_stop_accumulated_error":
-                        self._auto_start_stop_algo.accumulated_error,
-                    "auto_start_stop_accumulated_error_threshold":
-                        self._auto_start_stop_algo.accumulated_error_threshold,
-                    "auto_start_stop_last_switch_date":
-                        self._auto_start_stop_algo.last_switch_date,
+                    "auto_start_stop_accumulated_error": self._auto_start_stop_algo.accumulated_error,
+                    "auto_start_stop_accumulated_error_threshold": self._auto_start_stop_algo.accumulated_error_threshold,
+                    "auto_start_stop_last_switch_date": self._auto_start_stop_algo.last_switch_date,
                 }
             )
 

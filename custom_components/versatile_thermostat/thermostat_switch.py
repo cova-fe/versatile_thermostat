@@ -23,6 +23,7 @@ from .prop_algorithm import PropAlgorithm
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
     """Representation of a base class for a Versatile Thermostat over a switch."""
 
@@ -121,26 +122,26 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
         self._attr_extra_state_attributes["keep_alive_sec"] = under0.keep_alive_sec
 
         self._attr_extra_state_attributes["underlying_entities"] = [
-           underlying.entity_id for underlying in self._underlyings
+            underlying.entity_id for underlying in self._underlyings
         ]
 
-        self._attr_extra_state_attributes[
-            "on_percent"
-        ] = self._prop_algorithm.on_percent
+        self._attr_extra_state_attributes["on_percent"] = (
+            self._prop_algorithm.on_percent
+        )
         self._attr_extra_state_attributes["power_percent"] = self.power_percent
-        self._attr_extra_state_attributes[
-            "on_time_sec"
-        ] = self._prop_algorithm.on_time_sec
-        self._attr_extra_state_attributes[
-            "off_time_sec"
-        ] = self._prop_algorithm.off_time_sec
+        self._attr_extra_state_attributes["on_time_sec"] = (
+            self._prop_algorithm.on_time_sec
+        )
+        self._attr_extra_state_attributes["off_time_sec"] = (
+            self._prop_algorithm.off_time_sec
+        )
         self._attr_extra_state_attributes["cycle_min"] = self._cycle_min
         self._attr_extra_state_attributes["function"] = self._proportional_function
         self._attr_extra_state_attributes["tpi_coef_int"] = self._tpi_coef_int
         self._attr_extra_state_attributes["tpi_coef_ext"] = self._tpi_coef_ext
-        self._attr_extra_state_attributes[
-            "calculated_on_percent"
-        ] = self._prop_algorithm.calculated_on_percent
+        self._attr_extra_state_attributes["calculated_on_percent"] = (
+            self._prop_algorithm.calculated_on_percent
+        )
 
         self.async_write_ha_state()
         _LOGGER.debug(

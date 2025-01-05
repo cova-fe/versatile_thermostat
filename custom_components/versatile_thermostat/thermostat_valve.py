@@ -26,7 +26,10 @@ from .underlyings import UnderlyingValve
 
 _LOGGER = logging.getLogger(__name__)
 
-class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=abstract-method
+
+class ThermostatOverValve(
+    BaseThermostat[UnderlyingValve]
+):  # pylint: disable=abstract-method
     """Representation of a class for a Versatile Thermostat over a Valve"""
 
     _entity_component_unrecorded_attributes = BaseThermostat._entity_component_unrecorded_attributes.union(  # pylint: disable=protected-access
@@ -148,42 +151,42 @@ class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=a
     def update_custom_attributes(self):
         """Custom attributes"""
         super().update_custom_attributes()
-        self._attr_extra_state_attributes[
-            "valve_open_percent"
-        ] = self.valve_open_percent
+        self._attr_extra_state_attributes["valve_open_percent"] = (
+            self.valve_open_percent
+        )
         self._attr_extra_state_attributes["is_over_valve"] = self.is_over_valve
 
         self._attr_extra_state_attributes["underlying_entities"] = [
-           underlying.entity_id for underlying in self._underlyings
+            underlying.entity_id for underlying in self._underlyings
         ]
 
-        self._attr_extra_state_attributes[
-            "on_percent"
-        ] = self._prop_algorithm.on_percent
-        self._attr_extra_state_attributes[
-            "on_time_sec"
-        ] = self._prop_algorithm.on_time_sec
-        self._attr_extra_state_attributes[
-            "off_time_sec"
-        ] = self._prop_algorithm.off_time_sec
+        self._attr_extra_state_attributes["on_percent"] = (
+            self._prop_algorithm.on_percent
+        )
+        self._attr_extra_state_attributes["on_time_sec"] = (
+            self._prop_algorithm.on_time_sec
+        )
+        self._attr_extra_state_attributes["off_time_sec"] = (
+            self._prop_algorithm.off_time_sec
+        )
         self._attr_extra_state_attributes["cycle_min"] = self._cycle_min
         self._attr_extra_state_attributes["function"] = self._proportional_function
         self._attr_extra_state_attributes["tpi_coef_int"] = self._tpi_coef_int
         self._attr_extra_state_attributes["tpi_coef_ext"] = self._tpi_coef_ext
-        self._attr_extra_state_attributes[
-            "auto_regulation_dpercent"
-        ] = self._auto_regulation_dpercent
-        self._attr_extra_state_attributes[
-            "auto_regulation_period_min"
-        ] = self._auto_regulation_period_min
+        self._attr_extra_state_attributes["auto_regulation_dpercent"] = (
+            self._auto_regulation_dpercent
+        )
+        self._attr_extra_state_attributes["auto_regulation_period_min"] = (
+            self._auto_regulation_period_min
+        )
         self._attr_extra_state_attributes["last_calculation_timestamp"] = (
             self._last_calculation_timestamp.astimezone(self._current_tz).isoformat()
             if self._last_calculation_timestamp
             else None
         )
-        self._attr_extra_state_attributes[
-            "calculated_on_percent"
-        ] = self._prop_algorithm.calculated_on_percent
+        self._attr_extra_state_attributes["calculated_on_percent"] = (
+            self._prop_algorithm.calculated_on_percent
+        )
 
         self.async_write_ha_state()
         _LOGGER.debug(

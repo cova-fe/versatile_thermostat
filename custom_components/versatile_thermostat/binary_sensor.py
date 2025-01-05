@@ -1,4 +1,5 @@
 """ Implements the VersatileThermostat binary sensors component """
+
 # pylint: disable=unused-argument, line-too-long
 
 import logging
@@ -394,6 +395,7 @@ class CentralBoilerBinarySensor(BinarySensorEntity):
         # async def _async_startup_internal(*_):
         #     _LOGGER.debug("%s - Calling async_startup_internal", self)
         #     await self.listen_nb_active_vtherm_entity()
+
     #
     # if self.hass.state == CoreState.running:
     #     await _async_startup_internal()

@@ -35,6 +35,7 @@ HVAC_ACTION_ON = [  # pylint: disable=invalid-name
     HVACAction.HEATING,
 ]
 
+
 class ThermostatOverClimate(BaseThermostat[UnderlyingClimate]):
     """Representation of a base class for a Versatile Thermostat over a climate"""
 
@@ -206,7 +207,11 @@ class ThermostatOverClimate(BaseThermostat[UnderlyingClimate]):
         _LOGGER.info("%s - regulation calculation will be done", self)
 
         # use _attr_target_temperature_step to round value if _auto_regulation_dtemp is equal to 0
-        regulation_step = self._auto_regulation_dtemp if self._auto_regulation_dtemp else self._attr_target_temperature_step
+        regulation_step = (
+            self._auto_regulation_dtemp
+            if self._auto_regulation_dtemp
+            else self._attr_target_temperature_step
+        )
         _LOGGER.debug("%s - usage regulation_step: %.2f ", self, regulation_step)
 
         if self.current_temperature is not None:
@@ -251,7 +256,9 @@ class ThermostatOverClimate(BaseThermostat[UnderlyingClimate]):
             ):
                 offset_temp = device_temp - self.current_temperature
 
-            target_temp = round_to_nearest(self.regulated_target_temp + offset_temp, regulation_step)
+            target_temp = round_to_nearest(
+                self.regulated_target_temp + offset_temp, regulation_step
+            )
 
             _LOGGER.debug(
                 "%s - The device offset temp for regulation is %.2f - internal temp is %.2f. New target is %.2f",

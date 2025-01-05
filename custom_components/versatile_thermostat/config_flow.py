@@ -29,6 +29,7 @@ COMES_FROM = "comes_from"
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def add_suggested_values_to_schema(
     data_schema: vol.Schema, suggested_values: Mapping[str, Any]
 ) -> vol.Schema:
@@ -616,9 +617,13 @@ class VersatileThermostatBaseConfigFlow(FlowHandler):
             self.async_step_menu,
         )
 
-    async def async_step_auto_start_stop(self, user_input: dict | None = None) -> FlowResult:
-        """ Handle the Auto start stop step"""
-        _LOGGER.debug("Into ConfigFlow.async_step_auto_start_stop user_input=%s", user_input)
+    async def async_step_auto_start_stop(
+        self, user_input: dict | None = None
+    ) -> FlowResult:
+        """Handle the Auto start stop step"""
+        _LOGGER.debug(
+            "Into ConfigFlow.async_step_auto_start_stop user_input=%s", user_input
+        )
 
         schema = STEP_AUTO_START_STOP
         self._infos[COMES_FROM] = None

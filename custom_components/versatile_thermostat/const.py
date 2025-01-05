@@ -450,22 +450,24 @@ class RegulationParamSlow:
     """Light parameters for slow latency regulation"""
 
     kp: float = (
-        0.2     # 20% of the current internal regulation offset are caused
-                # by the current difference of target temperature and room temperature
+        0.2  # 20% of the current internal regulation offset are caused
+        # by the current difference of target temperature and room temperature
     )
     ki: float = (
-        0.8 / 288.0   # 80% of the current internal regulation offset are
-                      # caused by the average offset of the past 24 hours
+        0.8
+        / 288.0  # 80% of the current internal regulation offset are
+        # caused by the average offset of the past 24 hours
     )
     k_ext: float = (
-        1.0 / 25.0  # this will add 1°C to the offset when it's 25°C
-                    # colder outdoor than indoor
+        1.0
+        / 25.0  # this will add 1°C to the offset when it's 25°C
+        # colder outdoor than indoor
     )
     offset_max: float = 2.0  # limit to a final offset of -2°C to +2°C
     stabilization_threshold: float = (
-        0.0     # this needs to be disabled as otherwise the long term accumulated
-                # error will always be reset when the temp briefly crosses
-                # from/to below/above the target
+        0.0  # this needs to be disabled as otherwise the long term accumulated
+        # error will always be reset when the temp briefly crosses
+        # from/to below/above the target
     )
     accumulated_error_threshold: float = (
         2.0 * 288

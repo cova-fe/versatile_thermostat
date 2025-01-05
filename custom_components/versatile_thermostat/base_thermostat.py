@@ -362,13 +362,13 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         )
 
         self._ac_mode = entry_infos.get(CONF_AC_MODE)
-        if (t := entry_infos.get(CONF_TEMP_MAX) is not None):
+        if t := entry_infos.get(CONF_TEMP_MAX) is not None:
             self._attr_max_temp = t
         else:
             _LOGGER.error("No max temperature defined")
             return False
 
-        if (t := entry_infos.get(CONF_TEMP_MIN) is not None):
+        if t := entry_infos.get(CONF_TEMP_MIN) is not None:
             self._attr_min_temp = t
         else:
             _LOGGER.error("No min temperature defined")
@@ -537,7 +537,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
     async def async_startup(self, central_configuration):
         """Triggered on startup, used to get old state and set internal states
-         accordingly. This is triggered by VTherm API"""
+        accordingly. This is triggered by VTherm API"""
         _LOGGER.debug("%s - Calling async_startup", self)
 
         _LOGGER.debug("%s - Calling async_startup_internal", self)
@@ -1000,7 +1000,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
     @property
     def activable_underlying_entities(self) -> list | None:
         """Returns the activable underlying entities for controlling
-         the central boiler"""
+        the central boiler"""
         return self.underlying_entities
 
     def find_underlying_by_entity_id(self, entity_id: str) -> Entity | None:
@@ -1248,7 +1248,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
     def find_preset_temp(self, preset_mode: str):
         """Find the right temperature of a preset considering
-         the presence if configured"""
+        the presence if configured"""
         if preset_mode is None or preset_mode == "none":
             return (
                 self._attr_max_temp
@@ -1257,9 +1257,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             )
 
         if preset_mode == PRESET_SAFETY:
-            return (
-                self._target_temp
-            )
+            return self._target_temp
             # In safety just keep the current target temperature,
             # the thermostat should be off
         if preset_mode == PRESET_POWER:
@@ -1338,7 +1336,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
     async def change_target_temperature(self, temperature: float):
         """Set the target temperature and the target temperature
-         of underlying climate if any"""
+        of underlying climate if any"""
         if temperature:
             self._target_temp = temperature
 
@@ -1512,7 +1510,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
     async def async_underlying_entity_turn_off(self):
         """Turn heater toggleable device off. Used by Window, overpowering,
-         control_heating to turn all off"""
+        control_heating to turn all off"""
 
         for under in self._underlyings:
             await under.turn_off_and_cancel_cycle()
@@ -1747,9 +1745,8 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             "last_temperature_datetime": self._last_temperature_measure.astimezone(
                 self._current_tz
             ).isoformat(),
-            "last_ext_temperature_datetime":
-                self._last_ext_temperature_measure.astimezone(
-                    self._current_tz
+            "last_ext_temperature_datetime": self._last_ext_temperature_measure.astimezone(
+                self._current_tz
             ).isoformat(),
             "minimal_activation_delay_sec": self._minimal_activation_delay,
             ATTR_TOTAL_ENERGY: self.total_energy,

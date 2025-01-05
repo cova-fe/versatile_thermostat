@@ -40,6 +40,7 @@ class ERROR_THRESHOLD(float, Enum):
     MEDIUM = 5  # 5 cycle above 1° or 3 cycle above 2°, ..., 1 cycle above 5°
     FAST = 2  # 2 cycle above 1° or 1 cycle above 2°
 
+
 # ERROR_THRESHOLD = {
 #     AUTO_START_STOP_LEVEL_NONE: 0,      # Not used
 #     AUTO_START_STOP_LEVEL_SLOW: 10,     # 10 cycle above 1° or 5 cycle above 2°, ...

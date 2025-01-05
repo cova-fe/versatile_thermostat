@@ -15,6 +15,7 @@ T = TypeVar("T", bound=UnderlyingEntity)
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def round_to_nearest(n: float, x: float) -> float:
     """Round a number to the nearest x (which should be decimal but not null)
     Example:
