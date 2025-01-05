@@ -1,16 +1,10 @@
 """ Implements a base Feature Manager for Versatile Thermostat """
 
-import logging
 from typing import Any
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant
 
-from .const import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from .commons import ConfigData
-
-from .config_schema import *  # pylint: disable=wildcard-import, unused-wildcard-import
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class BaseFeatureManager:
@@ -31,7 +25,7 @@ class BaseFeatureManager:
         """Start listening the underlying entity"""
         raise NotImplementedError()
 
-    def stop_listening(self) -> bool:
+    def stop_listening(self) -> None:
         """stop listening to the sensor"""
         while self._active_listener:
             self._active_listener.pop()()

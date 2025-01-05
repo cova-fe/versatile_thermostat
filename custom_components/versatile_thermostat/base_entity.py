@@ -2,6 +2,7 @@
 
 import logging
 from datetime import timedelta
+from propcache import cached_property
 from homeassistant.core import HomeAssistant, callback, Event
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import DOMAIN as CLIMATE_DOMAIN
@@ -21,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 class VersatileThermostatBaseEntity(Entity):
     """A base class for all entities"""
 
-    _my_climate: BaseThermostat
+    _my_climate: BaseThermostat | None
     hass: HomeAssistant
     _config_id: str
     _device_name: str
@@ -33,12 +34,8 @@ class VersatileThermostatBaseEntity(Entity):
         self._device_name = device_name
         self._my_climate = None
         self._cancel_call = None
+        self._attr_should_poll = False
         self._attr_has_entity_name = True
-
-    @property
-    def should_poll(self) -> bool:
-        """Do not poll for those entities"""
-        return False
 
     @property
     def my_climate(self) -> BaseThermostat | None:
@@ -48,9 +45,13 @@ class VersatileThermostatBaseEntity(Entity):
             if self._my_climate:
                 # Only the first time
                 self.my_climate_is_initialized()
+            else:
+                _LOGGER.debug("No climate found for %s", self)
+                return None
+
         return self._my_climate
 
-    @property
+    @cached_property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
@@ -61,7 +62,7 @@ class VersatileThermostatBaseEntity(Entity):
             model=DOMAIN,
         )
 
-    def find_my_versatile_thermostat(self) -> BaseThermostat:
+    def find_my_versatile_thermostat(self) -> ClimateEntity | None:
         """Find the underlying climate entity"""
         try:
             component: EntityComponent[ClimateEntity] = self.hass.data[CLIMATE_DOMAIN]
@@ -114,6 +115,5 @@ class VersatileThermostatBaseEntity(Entity):
         self, event: Event
     ):  # pylint: disable=unused-argument
         """Called when my climate have change
-        This method aims to be overridden to take the status change
-        """
+        This method aims to be overridden to take the status change """
         return

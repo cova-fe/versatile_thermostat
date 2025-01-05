@@ -5,7 +5,13 @@ import logging
 from typing import Any
 from enum import StrEnum
 
-from homeassistant.const import ATTR_ENTITY_ID, STATE_ON, STATE_UNAVAILABLE
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    STATE_ON,
+    STATE_UNAVAILABLE,
+    SERVICE_TURN_OFF,
+    SERVICE_TURN_ON,
+)
 from homeassistant.core import State
 
 from homeassistant.exceptions import ServiceNotFound
@@ -13,6 +19,8 @@ from homeassistant.exceptions import ServiceNotFound
 from homeassistant.core import HomeAssistant, CALLBACK_TYPE
 from homeassistant.components.climate import (
     ClimateEntity,
+)
+from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     DOMAIN as CLIMATE_DOMAIN,
     HVACMode,
@@ -21,12 +29,10 @@ from homeassistant.components.climate import (
     SERVICE_SET_FAN_MODE,
     SERVICE_SET_HUMIDITY,
     SERVICE_SET_SWING_MODE,
-    SERVICE_TURN_OFF,
-    SERVICE_TURN_ON,
     SERVICE_SET_TEMPERATURE,
 )
 
-from homeassistant.components.number import SERVICE_SET_VALUE
+from homeassistant.components.number.const import SERVICE_SET_VALUE
 
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.event import async_call_later
@@ -86,7 +92,7 @@ class UnderlyingEntity:
 
     @property
     def entity_id(self):
-        """The entiy id represented by this class"""
+        """The entity id represented by this class"""
         return self._entity_id
 
     @property
@@ -127,16 +133,17 @@ class UnderlyingEntity:
         """Set the target temperature"""
         return
 
-    # This should be the correct way to handle turn_off and turn_on but this breaks the unit test
-    # will an not understandable error: TypeError: object MagicMock can't be used in 'await' expression
+    # This should be the correct way to handle turn_off and turn_on but this
+    # breaks the unit test will an not understandable error:
+    # TypeError: object MagicMock can't be used in 'await' expression
     async def turn_off(self):
-        """Turn off the underlying equipement.
-        Need to be overriden"""
+        """Turn off the underlying equipment.
+        Need to be overridden"""
         return NotImplementedError
 
     async def turn_on(self):
-        """Turn off the underlying equipement.
-        Need to be overriden"""
+        """Turn off the underlying equipment.
+        Need to be overridden"""
         return NotImplementedError
 
     @property
@@ -152,14 +159,16 @@ class UnderlyingEntity:
         """Prevent the underlying to be on but thermostat is off"""
         if hvac_mode == HVACMode.OFF and self.is_device_active:
             _LOGGER.info(
-                "%s - The hvac mode is OFF, but the underlying device is ON. Turning off device %s",
+                "%s - The hvac mode is OFF, but the underlying device is ON. "
+                "Turning off device %s",
                 self,
                 self._entity_id,
             )
             await self.set_hvac_mode(hvac_mode)
         elif hvac_mode != HVACMode.OFF and not self.is_device_active:
             _LOGGER.info(
-                "%s - The hvac mode is %s, but the underlying device is not ON. Turning on device %s if needed",
+                "%s - The hvac mode is %s, but the underlying device is not ON. "
+                "Turning on device %s if needed",
                 self,
                 hvac_mode,
                 self._entity_id,
@@ -257,7 +266,8 @@ class UnderlyingSwitch(UnderlyingEntity):
         super().startup()
         self._keep_alive.set_async_action(self._keep_alive_callback)
 
-    # @overrides this breaks some unit tests TypeError: object MagicMock can't be used in 'await' expression
+    # @overrides this breaks some unit tests
+    # TypeError: object MagicMock can't be used in 'await' expression
     async def set_hvac_mode(self, hvac_mode: HVACMode) -> bool:
         """Set the HVACmode. Returns true if something have change"""
 
@@ -305,10 +315,13 @@ class UnderlyingSwitch(UnderlyingEntity):
                 )
             await (self.turn_on() if self.is_device_active else self.turn_off())
 
-    # @overrides this breaks some unit tests TypeError: object MagicMock can't be used in 'await' expression
+    # @overrides this breaks some unit tests
+    # TypeError: object MagicMock can't be used in 'await' expression
     async def turn_off(self):
         """Turn heater toggleable device off."""
-        self._keep_alive.cancel()  # Cancel early to avoid a turn_on/turn_off race condition
+        self._keep_alive.cancel()
+        # Cancel early to avoid a turn_on/turn_off
+        # race condition
         _LOGGER.debug("%s - Stopping underlying entity %s", self, self._entity_id)
         command = SERVICE_TURN_OFF if not self.is_inversed else SERVICE_TURN_ON
         domain = self._entity_id.split(".")[0]
@@ -326,7 +339,8 @@ class UnderlyingSwitch(UnderlyingEntity):
 
     async def turn_on(self):
         """Turn heater toggleable device on."""
-        self._keep_alive.cancel()  # Cancel early to avoid a turn_on/turn_off race condition
+        self._keep_alive.cancel()
+        # Cancel early to avoid a turn_on/turn_off race condition
         _LOGGER.debug("%s - Starting underlying entity %s", self, self._entity_id)
 
         if not await self.check_overpowering():
@@ -357,7 +371,8 @@ class UnderlyingSwitch(UnderlyingEntity):
     ):
         """Starting cycle for switch"""
         _LOGGER.debug(
-            "%s - Starting new cycle hvac_mode=%s on_time_sec=%d off_time_sec=%d force=%s",
+            "%s - Starting new cycle hvac_mode=%s on_time_sec=%d "
+            "off_time_sec=%d force=%s",
             self,
             hvac_mode,
             on_time_sec,
@@ -376,7 +391,8 @@ class UnderlyingSwitch(UnderlyingEntity):
                 self._cancel_cycle()
             else:
                 _LOGGER.debug(
-                    "%s - A previous cycle is alredy running and no force -> waits for its end",
+                    "%s - A previous cycle is already running and no force "
+                    "-> waits for its end",
                     self,
                 )
                 # self._should_relaunch_control_heating = True
@@ -414,7 +430,8 @@ class UnderlyingSwitch(UnderlyingEntity):
     async def _turn_on_later(self, _):
         """Turn the heater on after a delay"""
         _LOGGER.debug(
-            "%s - calling turn_on_later hvac_mode=%s, should_relaunch_later=%s off_time_sec=%d",
+            "%s - calling turn_on_later hvac_mode=%s, "
+            "should_relaunch_later=%s off_time_sec=%d",
             self,
             self._hvac_mode,
             self._should_relaunch_control_heating,
@@ -456,7 +473,8 @@ class UnderlyingSwitch(UnderlyingEntity):
     async def _turn_off_later(self, _):
         """Turn the heater off and call the next cycle after the delay"""
         _LOGGER.debug(
-            "%s - calling turn_off_later hvac_mode=%s, should_relaunch_later=%s off_time_sec=%d",
+            "%s - calling turn_off_later hvac_mode=%s, "
+            "should_relaunch_later=%s off_time_sec=%d",
             self,
             self._hvac_mode,
             self._should_relaunch_control_heating,
@@ -546,7 +564,8 @@ class UnderlyingClimate(UnderlyingEntity):
                 self,
                 self.entity_id,
             )
-            # #56 keep the over_climate and try periodically to find the underlying climate
+            # #56 keep the over_climate and try periodically to
+            # find the underlying climate
             # self._is_over_climate = False
             raise UnknownEntity(f"Underlying entity {self.entity_id} not found")
         return
@@ -557,13 +576,15 @@ class UnderlyingClimate(UnderlyingEntity):
         return self._underlying_climate is not None
 
     async def set_hvac_mode(self, hvac_mode: HVACMode) -> bool:
-        """Set the HVACmode of the underlying climate. Returns true if something have change"""
+        """Set the HVACmode of the underlying climate.
+        Returns true if something have change"""
         if not self.is_initialized:
             return False
 
         if self._underlying_climate.hvac_mode == hvac_mode:
             _LOGGER.debug(
-                "%s - hvac_mode is already is requested state %s. Do not send any command",
+                "%s - hvac_mode is already is requested state %s. "
+                "Do not send any command",
                 self,
                 self._underlying_climate.hvac_mode,
             )
@@ -862,10 +883,14 @@ class UnderlyingClimate(UnderlyingEntity):
             and self._underlying_climate is not None
         ):
             min_val = TemperatureConverter.convert(
-                self._underlying_climate.min_temp, self._underlying_climate.temperature_unit, self._hass.config.units.temperature_unit
+                self._underlying_climate.min_temp,
+                self._underlying_climate.temperature_unit,
+                self._hass.config.units.temperature_unit,
             )
             max_val = TemperatureConverter.convert(
-                self._underlying_climate.max_temp, self._underlying_climate.temperature_unit, self._hass.config.units.temperature_unit
+                self._underlying_climate.max_temp,
+                self._underlying_climate.temperature_unit,
+                self._hass.config.units.temperature_unit,
             )
 
             new_value = max(min_val, min(value, max_val))
@@ -875,7 +900,9 @@ class UnderlyingClimate(UnderlyingEntity):
 
         if new_value != value:
             _LOGGER.info(
-                "%s - Target temp have been updated due min, max of the underlying entity. new_value=%.0f value=%.0f min=%.0f max=%.0f",
+                "%s - Target temp have been updated due min, "
+                "max of the underlying entity. new_value=%.0f "
+                "value=%.0f min=%.0f max=%.0f",
                 self,
                 new_value,
                 value,
@@ -1010,7 +1037,9 @@ class UnderlyingValve(UnderlyingEntity):
 
         if new_value != value:
             _LOGGER.info(
-                "%s - Valve open percent have been updated due min, max of the underlying entity. new_value=%.0f value=%.0f min=%.0f max=%.0f",
+                "%s - Valve open percent have been updated due min, "
+                "max of the underlying entity. new_value=%.0f value=%.0f "
+                "min=%.0f max=%.0f",
                 self,
                 new_value,
                 value,
@@ -1100,7 +1129,9 @@ class UnderlyingValveRegulation(UnderlyingValve):
 
         if not self._is_min_max_initialized:
             _LOGGER.warning(
-                "%s - impossible to initialize max_opening_degree or min_offset_calibration. Abort sending percent open to the valve. This could be a temporary message at startup."
+                "%s - impossible to initialize max_opening_degree "
+                "or min_offset_calibration. Abort sending percent open to the valve. "
+                "This could be a temporary message at startup."
             )
             return
 
@@ -1152,7 +1183,8 @@ class UnderlyingValveRegulation(UnderlyingValve):
                 )
 
         _LOGGER.debug(
-            "%s - valve regulation - I have sent offset_calibration=%s opening_degree=%s closing_degree=%s",
+            "%s - valve regulation - I have sent offset_calibration=%s "
+            "opening_degree=%s closing_degree=%s",
             self,
             offset,
             self._percent_open,

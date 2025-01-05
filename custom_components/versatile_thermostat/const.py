@@ -209,7 +209,7 @@ HVAC_OFF_REASON_NAME = "hvac_off_reason"
 # ]
 
 
-class HVAC_OFF_REASONS(StrEnum):
+class HVAC_OFF_REASON(StrEnum):
     MANUAL = "manual"
     AUTO_START_STOP = "auto_start_stop"
     WINDOW_DETECTION = "window_detection"

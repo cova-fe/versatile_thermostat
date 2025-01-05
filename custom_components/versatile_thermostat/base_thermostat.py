@@ -5,6 +5,7 @@
 import math
 import logging
 from typing import Any, Generic
+from datetime import datetime
 
 from homeassistant.core import (
     HomeAssistant,
@@ -52,10 +53,67 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 
-from .const import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from .const import (
+    HVAC_OFF_REASON,
+    dt_util,
+    get_tz,
+    overrides,
+)
+
 from .commons import ConfigData, T
 
-from .config_schema import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from .config_schema import (
+    ATTR_TOTAL_ENERGY,
+    CONF_AC_MODE,
+    CONF_CYCLE_MIN,
+    CONF_EXTERNAL_TEMP_SENSOR,
+    CONF_LAST_SEEN_TEMP_SENSOR,
+    CONF_MINIMAL_ACTIVATION_DELAY,
+    CONF_PRESETS,
+    CONF_PRESETS_AWAY,
+    CONF_PRESETS_AWAY_WITH_AC,
+    CONF_PRESETS_WITH_AC,
+    CONF_PROP_FUNCTION,
+    CONF_STEP_TEMPERATURE,
+    CONF_TEMP_MAX,
+    CONF_TEMP_MIN,
+    CONF_TEMP_SENSOR,
+    CONF_TPI_COEF_EXT,
+    CONF_TPI_COEF_INT,
+    CONF_USED_BY_CENTRAL_BOILER,
+    CONF_USE_ADVANCED_CENTRAL_CONFIG,
+    CONF_USE_CENTRAL_MODE,
+    CONF_USE_MAIN_CENTRAL_CONFIG,
+    CONF_USE_MOTION_CENTRAL_CONFIG,
+    CONF_USE_POWER_CENTRAL_CONFIG,
+    CONF_USE_PRESENCE_CENTRAL_CONFIG,
+    CONF_USE_PRESENCE_FEATURE,
+    CONF_USE_PRESETS_CENTRAL_CONFIG,
+    CONF_USE_TPI_CENTRAL_CONFIG,
+    CONF_USE_WINDOW_CENTRAL_CONFIG,
+    DEFAULT_SHORT_EMA_PARAMS,
+    DEVICE_MANUFACTURER,
+    DOMAIN,
+    HIDDEN_PRESETS,
+    HVAC_OFF_REASON_NAME,
+    PRESET_AC_SUFFIX,
+    PRESET_AWAY_SUFFIX,
+    PRESET_FROST_PROTECTION,
+    PRESET_POWER,
+    PROPORTIONAL_FUNCTION_TPI,
+    STEP_CENTRAL_ADVANCED_DATA_SCHEMA,
+    STEP_CENTRAL_MAIN_DATA_SCHEMA,
+    STEP_CENTRAL_MOTION_DATA_SCHEMA,
+    STEP_CENTRAL_POWER_DATA_SCHEMA,
+    STEP_CENTRAL_PRESENCE_DATA_SCHEMA,
+    STEP_CENTRAL_TPI_DATA_SCHEMA,
+    STEP_CENTRAL_WINDOW_DATA_SCHEMA,
+    SUPPORT_FLAGS,
+    EventType,
+    NowClass,
+    send_vtherm_event,
+    vol,
+)
 
 from .vtherm_api import VersatileThermostatAPI
 from .underlyings import UnderlyingEntity
@@ -205,7 +263,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
         self._use_central_config_temperature = False
 
-        self._hvac_off_reason: HVAC_OFF_REASONS | None = None
+        self._hvac_off_reason: HVAC_OFF_REASON | None = None
 
         # Instantiate all features manager
         self._managers: list[BaseFeatureManager] = []
@@ -303,9 +361,19 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             and entry_infos.get(CONF_USE_PRESENCE_FEATURE)
         )
 
-        self._ac_mode = entry_infos.get(CONF_AC_MODE) is True
-        self._attr_max_temp = entry_infos.get(CONF_TEMP_MAX)
-        self._attr_min_temp = entry_infos.get(CONF_TEMP_MIN)
+        self._ac_mode = entry_infos.get(CONF_AC_MODE)
+        if (t := entry_infos.get(CONF_TEMP_MAX) is not None):
+            self._attr_max_temp = t
+        else:
+            _LOGGER.error("No max temperature defined")
+            return False
+
+        if (t := entry_infos.get(CONF_TEMP_MIN) is not None):
+            self._attr_min_temp = t
+        else:
+            _LOGGER.error("No min temperature defined")
+            return False
+
         if (step := entry_infos.get(CONF_STEP_TEMPERATURE)) is not None:
             self._attr_target_temperature_step = step
 
@@ -363,7 +431,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             and self._ext_temp_sensor_entity_id is None
         ):
             _LOGGER.warning(
-                "Using TPI function but not external temperature sensor is set. "
+                "Using TPI function but external temperature sensor is not set. "
                 "Removing the delta temp ext factor. "
                 "Thermostat will not be fully operational."
             )

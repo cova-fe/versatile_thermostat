@@ -78,7 +78,7 @@ class AutoStartStopDetectionAlgorithm:
             # reset accumulated error if we change the level
             self._accumulated_error = 0
 
-    def calculate_action(
+    def calculate_action(  # noqa
         self,
         hvac_mode: HVACMode | None,
         saved_hvac_mode: HVACMode | None,
