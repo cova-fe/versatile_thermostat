@@ -63,9 +63,7 @@ class FeaturePowerManager(BaseFeatureManager):
     @overrides
     async def start_listening(self):
         """Start listening the underlying entity. There is nothing to listen"""
-        central_power_configuration = (
-            VersatileThermostatAPI.get_vtherm_api().central_power_manager.is_configured
-        )
+        central_power_configuration = VersatileThermostatAPI.get_vtherm_api().central_power_manager.is_configured
 
         if self._use_power_feature and self._device_power and central_power_configuration:
             self._is_configured = True
@@ -109,10 +107,7 @@ class FeaturePowerManager(BaseFeatureManager):
         """
 
         vtherm_api = VersatileThermostatAPI.get_vtherm_api()
-        if (
-            not self._is_configured
-            or not vtherm_api.central_power_manager.is_configured
-        ):
+        if not self._is_configured or not vtherm_api.central_power_manager.is_configured:
             return True
 
         current_power = vtherm_api.central_power_manager.current_power
@@ -260,9 +255,7 @@ class FeaturePowerManager(BaseFeatureManager):
         if not self._device_power or not self._vtherm.proportional_algorithm:
             return None
 
-        return float(
-            self._device_power * self._vtherm.proportional_algorithm.on_percent
-        )
+        return float(self._device_power * self._vtherm.proportional_algorithm.on_percent)
 
     def __str__(self):
         return f"PowerManager-{self.name}"

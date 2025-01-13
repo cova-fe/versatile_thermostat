@@ -59,19 +59,14 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
 
         use_auto_start_stop = entry_infos.get(CONF_USE_AUTO_START_STOP_FEATURE, False)
         if use_auto_start_stop:
-            self._auto_start_stop_level = (
-                entry_infos.get(CONF_AUTO_START_STOP_LEVEL, None)
-                or AUTO_START_STOP_LEVEL.NONE
-            )
+            self._auto_start_stop_level = entry_infos.get(CONF_AUTO_START_STOP_LEVEL, None) or AUTO_START_STOP_LEVEL.NONE
             self._is_configured = True
         else:
             self._auto_start_stop_level = AUTO_START_STOP_LEVEL.NONE
             self._is_configured = False
 
         # Instantiate the auto start stop algo
-        self._auto_start_stop_algo = AutoStartStopDetectionAlgorithm(
-            self._auto_start_stop_level, self.name
-        )
+        self._auto_start_stop_algo = AutoStartStopDetectionAlgorithm(self._auto_start_stop_level, self.name)
 
         # Fix an eventual incoherent state
         if self._vtherm.is_on and self._vtherm.hvac_off_reason == HVAC_OFF_REASON_AUTO_START_STOP:
@@ -93,9 +88,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
             _LOGGER.debug("%s - auto start/stop is disabled (or not configured)", self)
             return True
 
-        slope = (
-            self._vtherm.last_temperature_slope or 0
-        ) / 60  # to have the slope in °/min
+        slope = (self._vtherm.last_temperature_slope or 0) / 60  # to have the slope in °/min
         action = self._auto_start_stop_algo.calculate_action(
             self._vtherm.hvac_mode,
             self._vtherm.saved_hvac_mode,
@@ -132,13 +125,8 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
 
             # Stop here
             return False
-        elif (
-            action == AUTO_START_STOP_ACTION.ON
-            and self._vtherm.hvac_off_reason == HVAC_OFF_REASON.AUTO_START_STOP
-        ):
-            _LOGGER.info(
-                "%s - Turning ON the Vtherm due to auto-start-stop conditions", self
-            )
+        elif action == AUTO_START_STOP_ACTION.ON and self._vtherm.hvac_off_reason == HVAC_OFF_REASON.AUTO_START_STOP:
+            _LOGGER.info("%s - Turning ON the Vtherm due to auto-start-stop conditions", self)
             await self._vtherm.async_turn_on()
 
             # Send an event
@@ -165,14 +153,8 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
     def set_auto_start_stop_enable(self, is_enabled: bool):
         """Enable/Disable the auto-start/stop feature"""
         self._is_auto_start_stop_enabled = is_enabled
-        if (
-            self._vtherm.hvac_mode == HVACMode.OFF
-            and self._vtherm.hvac_off_reason == HVAC_OFF_REASON.AUTO_START_STOP
-        ):
-            _LOGGER.debug(
-                "%s - the vtherm is off cause auto-start/stop and enable have been "
-                "set to false -> starts the VTherm"
-            )
+        if self._vtherm.hvac_mode == HVACMode.OFF and self._vtherm.hvac_off_reason == HVAC_OFF_REASON.AUTO_START_STOP:
+            _LOGGER.debug("%s - the vtherm is off cause auto-start/stop and enable have been " "set to false -> starts the VTherm")
             self.hass.create_task(self._vtherm.async_turn_on())
 
             # Send an event
@@ -186,9 +168,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
                     "saved_hvac_mode": self._vtherm.saved_hvac_mode,
                     "target_temperature": self._vtherm.target_temperature,
                     "current_temperature": self._vtherm.current_temperature,
-                    "temperature_slope": round(
-                        self._vtherm.last_temperature_slope or 0, 3
-                    ),
+                    "temperature_slope": round(self._vtherm.last_temperature_slope or 0, 3),
                     "accumulated_error": self._auto_start_stop_algo.accumulated_error,
                     "accumulated_error_threshold": self._auto_start_stop_algo.accumulated_error_threshold,
                 },
@@ -233,10 +213,7 @@ class FeatureAutoStartStopManager(BaseFeatureManager):
     @property
     def is_auto_stopped(self) -> bool:
         """Returns the is vtherm is stopped and reason is AUTO_START_STOP"""
-        return (
-            self._vtherm.hvac_mode == HVACMode.OFF
-            and self._vtherm.hvac_off_reason == HVAC_OFF_REASON.AUTO_START_STOP
-        )
+        return self._vtherm.hvac_mode == HVACMode.OFF and self._vtherm.hvac_off_reason == HVAC_OFF_REASON.AUTO_START_STOP
 
     def __str__(self):
         return f"AutoStartStopManager-{self.name}"

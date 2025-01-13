@@ -268,9 +268,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         # Instantiate all features manager
         self._managers: list[BaseFeatureManager] = []
 
-        self._presence_manager: FeaturePresenceManager = FeaturePresenceManager(
-            self, hass
-        )
+        self._presence_manager: FeaturePresenceManager = FeaturePresenceManager(self, hass)
         self._power_manager: FeaturePowerManager = FeaturePowerManager(self, hass)
         self._motion_manager: FeatureMotionManager = FeatureMotionManager(self, hass)
         self._window_manager: FeatureWindowManager = FeatureWindowManager(self, hass)
@@ -288,9 +286,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         """Register a manager"""
         self._managers.append(manager)
 
-    def clean_central_config_doublon(
-        self, config_entry: ConfigData, central_config: ConfigEntry | None
-    ) -> dict[str, Any]:
+    def clean_central_config_doublon(self, config_entry: ConfigData, central_config: ConfigEntry | None) -> dict[str, Any]:
         """Removes all values from config with are concerned by central_config"""
 
         def clean_one(cfg, schema: vol.Schema):
@@ -354,11 +350,8 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         for manager in self._managers:
             manager.post_init(entry_infos)
 
-        self._use_central_config_temperature = entry_infos.get(
-            CONF_USE_PRESETS_CENTRAL_CONFIG
-        ) or (
-            entry_infos.get(CONF_USE_PRESENCE_CENTRAL_CONFIG)
-            and entry_infos.get(CONF_USE_PRESENCE_FEATURE)
+        self._use_central_config_temperature = entry_infos.get(CONF_USE_PRESETS_CENTRAL_CONFIG) or (
+            entry_infos.get(CONF_USE_PRESENCE_CENTRAL_CONFIG) and entry_infos.get(CONF_USE_PRESENCE_FEATURE)
         )
 
         self._ac_mode = entry_infos.get(CONF_AC_MODE)
@@ -386,9 +379,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
         self._proportional_function = entry_infos.get(CONF_PROP_FUNCTION)
         self._temp_sensor_entity_id = entry_infos.get(CONF_TEMP_SENSOR)
-        self._last_seen_temp_sensor_entity_id = entry_infos.get(
-            CONF_LAST_SEEN_TEMP_SENSOR
-        )
+        self._last_seen_temp_sensor_entity_id = entry_infos.get(CONF_LAST_SEEN_TEMP_SENSOR)
         self._ext_temp_sensor_entity_id = entry_infos.get(CONF_EXTERNAL_TEMP_SENSOR)
 
         self._tpi_coef_int = entry_infos.get(CONF_TPI_COEF_INT)
@@ -426,15 +417,8 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         self._cur_ext_temp = None
 
         # Fix parameters for TPI
-        if (
-            self._proportional_function == PROPORTIONAL_FUNCTION_TPI
-            and self._ext_temp_sensor_entity_id is None
-        ):
-            _LOGGER.warning(
-                "Using TPI function but external temperature sensor is not set. "
-                "Removing the delta temp ext factor. "
-                "Thermostat will not be fully operational."
-            )
+        if self._proportional_function == PROPORTIONAL_FUNCTION_TPI and self._ext_temp_sensor_entity_id is None:
+            _LOGGER.warning("Using TPI function but external temperature sensor is not set. " "Removing the delta temp ext factor. " "Thermostat will not be fully operational.")
             self._tpi_coef_ext = 0
 
         self._minimal_activation_delay = entry_infos.get(CONF_MINIMAL_ACTIVATION_DELAY)
@@ -463,13 +447,9 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             short_ema_params.get("max_alpha"),
         )
 
-        self._is_central_mode = not (
-            entry_infos.get(CONF_USE_CENTRAL_MODE) is False
-        )  # Default value (None) is True
+        self._is_central_mode = not (entry_infos.get(CONF_USE_CENTRAL_MODE) is False)  # Default value (None) is True
 
-        self._is_used_by_central_boiler = (
-            entry_infos.get(CONF_USED_BY_CENTRAL_BOILER) is True
-        )
+        self._is_used_by_central_boiler = entry_infos.get(CONF_USED_BY_CENTRAL_BOILER) is True
 
         self._max_on_percent = api.max_on_percent
 
@@ -518,9 +498,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
     async def async_will_remove_from_hass(self):
         """Try to force backup of entity"""
-        _LOGGER.debug(
-            "%s - force write before remove. Energy is %s", self, self.total_energy
-        )
+        _LOGGER.debug("%s - force write before remove. Energy is %s", self, self.total_energy)
         # Force dump in background
         await restore_async_get(self.hass).async_dump_states()
 
@@ -568,9 +546,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             need_write_state = True
 
         if self._ext_temp_sensor_entity_id:
-            ext_temperature_state = self.hass.states.get(
-                self._ext_temp_sensor_entity_id
-            )
+            ext_temperature_state = self.hass.states.get(self._ext_temp_sensor_entity_id)
             if ext_temperature_state and ext_temperature_state.state not in (
                 STATE_UNAVAILABLE,
                 STATE_UNKNOWN,
@@ -583,14 +559,12 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
                 await self._async_update_ext_temp(ext_temperature_state)
             else:
                 _LOGGER.debug(
-                    "%s - external temperature sensor have NOT been retrieved "
-                    "cause unknown or unavailable",
+                    "%s - external temperature sensor have NOT been retrieved " "cause unknown or unavailable",
                     self,
                 )
         else:
             _LOGGER.debug(
-                "%s - external temperature sensor have NOT been retrieved "
-                "cause no external sensor",
+                "%s - external temperature sensor have NOT been retrieved " "cause no external sensor",
                 self,
             )
 
@@ -626,9 +600,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         """Try to get my previous state"""
         # Check If we have an old state
         old_state = await self.async_get_last_state()
-        _LOGGER.debug(
-            "%s - Calling get_my_previous_state old_state is %s", self, old_state
-        )
+        _LOGGER.debug("%s - Calling get_my_previous_state old_state is %s", self, old_state)
         if old_state is not None:
             # If we have no initial temperature, restore
             if self._target_temp is None:
@@ -644,9 +616,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
                         self._target_temp,
                     )
                 else:
-                    await self.change_target_temperature(
-                        float(old_state.attributes[ATTR_TEMPERATURE])
-                    )
+                    await self.change_target_temperature(float(old_state.attributes[ATTR_TEMPERATURE]))
 
             old_preset_mode = old_state.attributes.get(ATTR_PRESET_MODE)
             # Never restore a Power or Security preset
@@ -669,9 +639,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
             # restore also saved info so that window detection will work
             self._saved_hvac_mode = old_state.attributes.get("saved_hvac_mode", None)
-            self._saved_preset_mode = old_state.attributes.get(
-                "saved_preset_mode", None
-            )
+            self._saved_preset_mode = old_state.attributes.get("saved_preset_mode", None)
 
             old_total_energy = old_state.attributes.get(ATTR_TOTAL_ENERGY)
             self._total_energy = old_total_energy if old_total_energy is not None else 0
@@ -689,9 +657,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
                     await self.change_target_temperature(self.max_temp)
                 else:
                     await self.change_target_temperature(self.min_temp)
-            _LOGGER.warning(
-                "No previously saved temperature, setting to %s", self._target_temp
-            )
+            _LOGGER.warning("No previously saved temperature, setting to %s", self._target_temp)
             self._total_energy = 0
             _LOGGER.debug(
                 "%s - get_my_previous_state  no previous state energy is %s",
@@ -1088,10 +1054,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         # If we already are in OFF, the manual OFF should just
         # overwrite the reason and saved_hvac_mode
         if self._hvac_mode == HVACMode.OFF and hvac_mode == HVACMode.OFF:
-            _LOGGER.info(
-                "%s - already in OFF. Change the reason to MANUAL "
-                "and erase the saved_havc_mode"
-            )
+            _LOGGER.info("%s - already in OFF. Change the reason to MANUAL " "and erase the saved_havc_mode")
             self._hvac_off_reason = HVAC_OFF_REASON_MANUAL
             self._saved_hvac_mode = HVACMode.OFF
 
@@ -1108,9 +1071,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         # Delegate to all underlying
         sub_need_control_heating = False
         for under in self._underlyings:
-            sub_need_control_heating = (
-                await under.set_hvac_mode(hvac_mode) or need_control_heating
-            )
+            sub_need_control_heating = await under.set_hvac_mode(hvac_mode) or need_control_heating
 
         # If AC is on maybe we have to change the temperature in force mode,
         # but not in frost mode (there is no Frost protection possible in AC mode)
@@ -1149,10 +1110,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             CENTRAL_MODE_COOL_ONLY,
             CENTRAL_MODE_HEAT_ONLY,
             CENTRAL_MODE_STOPPED,
-        ] or (
-            self._last_central_mode == CENTRAL_MODE_FROST_PROTECTION
-            and preset_mode == PRESET_FROST_PROTECTION
-        )
+        ] or (self._last_central_mode == CENTRAL_MODE_FROST_PROTECTION and preset_mode == PRESET_FROST_PROTECTION)
         if not accept:
             _LOGGER.info(
                 "%s - Impossible to change the preset to %s because central mode is %s",
@@ -1169,10 +1127,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
     async def async_set_preset_mode_internal(self, preset_mode: str, force=False, overwrite_saved_preset=True):
         """Set new preset mode."""
         _LOGGER.info("%s - Set preset_mode: %s force=%s", self, preset_mode, force)
-        if (
-            preset_mode not in (self._attr_preset_modes or [])
-            and preset_mode not in HIDDEN_PRESETS
-        ):
+        if preset_mode not in (self._attr_preset_modes or []) and preset_mode not in HIDDEN_PRESETS:
             raise ValueError(
                 f"Got unsupported preset_mode {preset_mode}. Must be one of {
                     self._attr_preset_modes}"  # pylint: disable=line-too-long
@@ -1187,9 +1142,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         # In safety mode don't change preset but memorise
         # the new expected preset when safety will be off
         if preset_mode != PRESET_SAFETY and self._safety_manager.is_safety_detected:
-            _LOGGER.debug(
-                "%s - is in safety mode. Just memorise the new expected ", self
-            )
+            _LOGGER.debug("%s - is in safety mode. Just memorise the new expected ", self)
             if preset_mode not in HIDDEN_PRESETS:
                 self._saved_preset_mode = preset_mode
             return
@@ -1227,34 +1180,21 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         if self._attr_preset_mode != old_preset_mode:
             self.send_event(EventType.PRESET_EVENT, {"preset": self._attr_preset_mode})
 
-    def reset_last_change_time_from_vtherm(
-        self, old_preset_mode: str | None = None
-    ):  # pylint: disable=unused-argument
+    def reset_last_change_time_from_vtherm(self, old_preset_mode: str | None = None):  # pylint: disable=unused-argument
         """Reset to now the last change time"""
         self._last_change_time_from_vtherm = self.now
-        _LOGGER.debug(
-            "%s - last_change_time is now %s", self, self._last_change_time_from_vtherm
-        )
+        _LOGGER.debug("%s - last_change_time is now %s", self, self._last_change_time_from_vtherm)
 
     def reset_last_temperature_time(self, old_preset_mode: str | None = None):
         """Reset to now the last temperature time if conditions are satisfied"""
-        if (
-            self._attr_preset_mode not in HIDDEN_PRESETS
-            and old_preset_mode not in HIDDEN_PRESETS
-        ):
-            self._last_temperature_measure = self._last_ext_temperature_measure = (
-                self.now
-            )
+        if self._attr_preset_mode not in HIDDEN_PRESETS and old_preset_mode not in HIDDEN_PRESETS:
+            self._last_temperature_measure = self._last_ext_temperature_measure = self.now
 
     def find_preset_temp(self, preset_mode: str):
         """Find the right temperature of a preset considering
         the presence if configured"""
         if preset_mode is None or preset_mode == "none":
-            return (
-                self._attr_max_temp
-                if self._ac_mode and self._hvac_mode == HVACMode.COOL
-                else self._attr_min_temp
-            )
+            return self._attr_max_temp if self._ac_mode and self._hvac_mode == HVACMode.COOL else self._attr_min_temp
 
         if preset_mode == PRESET_SAFETY:
             return self._target_temp
@@ -1291,11 +1231,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
                 # We should return the preset_away temp val but if
                 # preset temp is 0, that means the user don't want to use
                 # the preset so we return 0, even if there is a value is preset_away
-                return (
-                    self._presets_away.get(self.get_preset_away_name(preset_mode), 0)
-                    if temp_val > 0
-                    else temp_val
-                )
+                return self._presets_away.get(self.get_preset_away_name(preset_mode), 0) if temp_val > 0 else temp_val
             else:
                 return temp_val
 
@@ -1342,24 +1278,14 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
 
     def get_state_date_or_now(self, state: State) -> datetime:
         """Extract the last_changed state from State or return now if not available"""
-        return (
-            state.last_changed.astimezone(self._current_tz)
-            if isinstance(state.last_changed, datetime)
-            else self.now
-        )
+        return state.last_changed.astimezone(self._current_tz) if isinstance(state.last_changed, datetime) else self.now
 
     def get_last_updated_date_or_now(self, state: State) -> datetime:
         """Extract the last_changed state from State or return now if not available"""
-        return (
-            state.last_updated.astimezone(self._current_tz)
-            if isinstance(state.last_updated, datetime)
-            else self.now
-        )
+        return state.last_updated.astimezone(self._current_tz) if isinstance(state.last_updated, datetime) else self.now
 
     @callback
-    async def entry_update_listener(
-        self, _, config_entry: ConfigEntry  # hass: HomeAssistant,
-    ) -> None:
+    async def entry_update_listener(self, _, config_entry: ConfigEntry) -> None:  # hass: HomeAssistant,
         """Called when the entry have changed in ConfigFlow"""
         _LOGGER.info("%s - Change entry with the values: %s", self, config_entry.data)
 
@@ -1396,9 +1322,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         # try to extract the datetime (from state)
         try:
             # Convert ISO 8601 string to datetime object
-            self._last_temperature_measure = self.get_last_updated_date_or_now(
-                new_state
-            )
+            self._last_temperature_measure = self.get_last_updated_date_or_now(new_state)
             # issue 690 - don't reset the last change time on lastSeen
             # self.reset_last_change_time_from_vtherm()
             _LOGGER.debug(
@@ -1462,13 +1386,10 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             self._last_temperature_measure = self.get_state_date_or_now(state)
 
             # calculate the smooth_temperature with EMA calculation
-            self._ema_temp = self._ema_algo.calculate_ema(
-                self._cur_temp, self._last_temperature_measure
-            )
+            self._ema_temp = self._ema_algo.calculate_ema(self._cur_temp, self._last_temperature_measure)
 
             _LOGGER.debug(
-                "%s - After setting _last_temperature_measure %s, "
-                "state.last_changed.replace=%s",
+                "%s - After setting _last_temperature_measure %s, " "state.last_changed.replace=%s",
                 self,
                 self._last_temperature_measure,
                 state.last_changed.astimezone(self._current_tz),
@@ -1495,8 +1416,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             self._last_ext_temperature_measure = self.get_state_date_or_now(state)
 
             _LOGGER.debug(
-                "%s - After setting _last_ext_temperature_measure %s, "
-                "state.last_changed.replace=%s",
+                "%s - After setting _last_ext_temperature_measure %s, " "state.last_changed.replace=%s",
                 self,
                 self._last_ext_temperature_measure,
                 state.last_changed.astimezone(self._current_tz),
@@ -1519,20 +1439,14 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         """Save the current preset mode to be restored later
         We never save a hidden preset mode
         """
-        if (
-            self._attr_preset_mode not in HIDDEN_PRESETS
-            and self._attr_preset_mode is not None
-        ):
+        if self._attr_preset_mode not in HIDDEN_PRESETS and self._attr_preset_mode is not None:
             self._saved_preset_mode = self._attr_preset_mode
 
     async def restore_preset_mode(self, force=False):
         """Restore a previous preset mode
         We never restore a hidden preset mode. Normally that is not possible
         """
-        if (
-            self._saved_preset_mode not in HIDDEN_PRESETS
-            and self._saved_preset_mode is not None
-        ):
+        if self._saved_preset_mode not in HIDDEN_PRESETS and self._saved_preset_mode is not None:
             await self.async_set_preset_mode_internal(self._saved_preset_mode, force=force)
 
     def save_hvac_mode(self):
@@ -1567,9 +1481,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         """Restore the saved target temp"""
         await self.change_target_temperature(self._saved_target_temp)
 
-    async def check_central_mode(
-        self, new_central_mode: str | None, old_central_mode: str | None
-    ):
+    async def check_central_mode(self, new_central_mode: str | None, old_central_mode: str | None):
         """Take into account a central mode change"""
         if not self.is_controlled_by_central_mode:
             self._last_central_mode = None
@@ -1628,10 +1540,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             return
 
         if new_central_mode == CENTRAL_MODE_FROST_PROTECTION:
-            if (
-                PRESET_FROST_PROTECTION in self.preset_modes
-                and HVACMode.HEAT in self.hvac_modes
-            ):
+            if PRESET_FROST_PROTECTION in self.preset_modes and HVACMode.HEAT in self.hvac_modes:
                 await self.async_set_hvac_mode(HVACMode.HEAT)
                 await self.async_set_preset_mode(PRESET_FROST_PROTECTION, overwrite_saved_preset=False)
             else:
@@ -1724,30 +1633,18 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             "eco_temp": self._presets.get(PRESET_ECO, 0),
             "boost_temp": self._presets.get(PRESET_BOOST, 0),
             "comfort_temp": self._presets.get(PRESET_COMFORT, 0),
-            "frost_away_temp": self._presets_away.get(
-                self.get_preset_away_name(PRESET_FROST_PROTECTION), 0
-            ),
-            "eco_away_temp": self._presets_away.get(
-                self.get_preset_away_name(PRESET_ECO), 0
-            ),
-            "boost_away_temp": self._presets_away.get(
-                self.get_preset_away_name(PRESET_BOOST), 0
-            ),
-            "comfort_away_temp": self._presets_away.get(
-                self.get_preset_away_name(PRESET_COMFORT), 0
-            ),
+            "frost_away_temp": self._presets_away.get(self.get_preset_away_name(PRESET_FROST_PROTECTION), 0),
+            "eco_away_temp": self._presets_away.get(self.get_preset_away_name(PRESET_ECO), 0),
+            "boost_away_temp": self._presets_away.get(self.get_preset_away_name(PRESET_BOOST), 0),
+            "comfort_away_temp": self._presets_away.get(self.get_preset_away_name(PRESET_COMFORT), 0),
             "target_temperature_step": self.target_temperature_step,
             "ext_current_temperature": self._cur_ext_temp,
             "ac_mode": self._ac_mode,
             "saved_preset_mode": self._saved_preset_mode,
             "saved_target_temp": self._saved_target_temp,
             "saved_hvac_mode": self._saved_hvac_mode,
-            "last_temperature_datetime": self._last_temperature_measure.astimezone(
-                self._current_tz
-            ).isoformat(),
-            "last_ext_temperature_datetime": self._last_ext_temperature_measure.astimezone(
-                self._current_tz
-            ).isoformat(),
+            "last_temperature_datetime": self._last_temperature_measure.astimezone(self._current_tz).isoformat(),
+            "last_ext_temperature_datetime": self._last_ext_temperature_measure.astimezone(self._current_tz).isoformat(),
             "minimal_activation_delay_sec": self._minimal_activation_delay,
             ATTR_TOTAL_ENERGY: self.total_energy,
             "last_update_datetime": self.now.isoformat(),
@@ -1763,11 +1660,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             "max_on_percent": self._max_on_percent,
             "have_valve_regulation": self.have_valve_regulation,
             "last_change_time_from_vtherm": (
-                self._last_change_time_from_vtherm.astimezone(
-                    self._current_tz
-                ).isoformat()
-                if self._last_change_time_from_vtherm is not None
-                else None
+                self._last_change_time_from_vtherm.astimezone(self._current_tz).isoformat() if self._last_change_time_from_vtherm is not None else None
             ),
         }
 
@@ -1834,8 +1727,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             entity_id: climate.thermostat_2
         """
         _LOGGER.info(
-            "%s - Calling service_set_preset_temperature, preset: %s, "
-            "temperature: %s, temperature_away: %s",
+            "%s - Calling service_set_preset_temperature, preset: %s, " "temperature: %s, temperature_away: %s",
             self,
             preset,
             temperature,
@@ -1848,8 +1740,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
                 self._presets_away[self.get_preset_away_name(preset)] = temperature_away
         else:
             _LOGGER.warning(
-                "%s - No preset %s configured for this thermostat. "
-                "Ignoring set_preset_temperature call",
+                "%s - No preset %s configured for this thermostat. " "Ignoring set_preset_temperature call",
                 self,
                 preset,
             )
@@ -1876,8 +1767,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             entity_id: climate.thermostat_2
         """
         _LOGGER.info(
-            "%s - Calling SERVICE_SET_SAFETY, delay_min: %s, "
-            "min_on_percent: %s %%, default_on_percent: %s %%",
+            "%s - Calling SERVICE_SET_SAFETY, delay_min: %s, " "min_on_percent: %s %%, default_on_percent: %s %%",
             self,
             delay_min,
             min_on_percent * 100,
@@ -1891,9 +1781,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
             self._safety_manager.set_safety_default_on_percent(default_on_percent)
 
         if self._prop_algorithm:
-            self._prop_algorithm.set_safety(
-                self._safety_manager.safety_default_on_percent
-            )
+            self._prop_algorithm.set_safety(self._safety_manager.safety_default_on_percent)
 
         await self.async_control_heating()
         self.update_custom_attributes()
@@ -1930,24 +1818,17 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         def calculate_presets(items, use_central_conf_key):
             presets: dict[str, Any] = {}
             config_id = self._unique_id
-            if (
-                central_config
-                and self._entry_infos.get(use_central_conf_key, False) is True
-            ):
+            if central_config and self._entry_infos.get(use_central_conf_key, False) is True:
                 config_id = central_config.entry_id
 
             for key, preset_name in items:
                 _LOGGER.debug("looking for key=%s, preset_name=%s", key, preset_name)
-                value = vtherm_api.get_temperature_number_value(
-                    config_id=config_id, preset_name=preset_name
-                )
+                value = vtherm_api.get_temperature_number_value(config_id=config_id, preset_name=preset_name)
                 if value is not None:
                     presets[key] = value
                 else:
                     _LOGGER.debug("preset_name %s not found in VTherm API", preset_name)
-                    presets[key] = (
-                        self._attr_max_temp if self._ac_mode else self._attr_min_temp
-                    )
+                    presets[key] = self._attr_max_temp if self._ac_mode else self._attr_min_temp
             return presets
 
         # Calculate all presets
@@ -1960,11 +1841,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
         # if self._entry_infos.get(CONF_USE_PRESENCE_FEATURE) is True:
         if self._presence_manager.is_configured:
             presets_away = calculate_presets(
-                (
-                    CONF_PRESETS_AWAY_WITH_AC.items()
-                    if self._ac_mode
-                    else CONF_PRESETS_AWAY.items()
-                ),
+                (CONF_PRESETS_AWAY_WITH_AC.items() if self._ac_mode else CONF_PRESETS_AWAY.items()),
                 CONF_USE_PRESENCE_CENTRAL_CONFIG,
             )
 
@@ -1982,9 +1859,7 @@ class BaseThermostat(ClimateEntity, RestoreEntity, Generic[T]):
                 if preset_value is not None and preset_value > 0:
                     self._attr_preset_modes.append(key)
 
-            _LOGGER.debug(
-                "After adding presets, preset_modes to %s", self._attr_preset_modes
-            )
+            _LOGGER.debug("After adding presets, preset_modes to %s", self._attr_preset_modes)
         else:
             _LOGGER.debug("No preset_modes")
 

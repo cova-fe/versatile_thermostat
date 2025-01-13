@@ -54,10 +54,7 @@ class FeaturePresenceManager(BaseFeatureManager):
     def post_init(self, entry_infos: ConfigData):
         """Reinit of the manager"""
         self._presence_sensor_entity_id = entry_infos.get(CONF_PRESENCE_SENSOR)
-        if (
-            entry_infos.get(CONF_USE_PRESENCE_FEATURE, False)
-            and self._presence_sensor_entity_id is not None
-        ):
+        if entry_infos.get(CONF_USE_PRESENCE_FEATURE, False) and self._presence_sensor_entity_id is not None:
             self._is_configured = True
             self._presence_state = STATE_UNKNOWN
 
@@ -117,9 +114,7 @@ class FeaturePresenceManager(BaseFeatureManager):
 
         _LOGGER.info("%s - Updating presence. New state is %s", self, new_state)
         old_presence_state = self._presence_state
-        self._presence_state = (
-            STATE_ON if new_state in (STATE_ON, STATE_HOME) else STATE_OFF
-        )
+        self._presence_state = STATE_ON if new_state in (STATE_ON, STATE_HOME) else STATE_OFF
         if self._vtherm.preset_mode in HIDDEN_PRESETS or self._is_configured is False:
             _LOGGER.info(
                 "%s - Ignoring presence change cause in Power or Security preset or presence not configured",

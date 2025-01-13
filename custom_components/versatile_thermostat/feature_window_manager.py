@@ -86,16 +86,10 @@ class FeatureWindowManager(BaseFeatureManager):
         # default is the WINDOW_ON delay if not configured
         self._window_off_delay_sec = entry_infos.get(CONF_WINDOW_OFF_DELAY, self._window_delay_sec)
 
-        self._window_action = (
-            entry_infos.get(CONF_WINDOW_ACTION) or CONF_WINDOW_TURN_OFF
-        )
+        self._window_action = entry_infos.get(CONF_WINDOW_ACTION) or CONF_WINDOW_TURN_OFF
 
-        self._window_auto_open_threshold = entry_infos.get(
-            CONF_WINDOW_AUTO_OPEN_THRESHOLD
-        )
-        self._window_auto_close_threshold = entry_infos.get(
-            CONF_WINDOW_AUTO_CLOSE_THRESHOLD
-        )
+        self._window_auto_open_threshold = entry_infos.get(CONF_WINDOW_AUTO_OPEN_THRESHOLD)
+        self._window_auto_close_threshold = entry_infos.get(CONF_WINDOW_AUTO_CLOSE_THRESHOLD)
         self._window_auto_max_duration = entry_infos.get(CONF_WINDOW_AUTO_MAX_DURATION)
 
         use_window_feature = entry_infos.get(CONF_USE_WINDOW_FEATURE, False)
@@ -119,10 +113,7 @@ class FeatureWindowManager(BaseFeatureManager):
         )
 
         if self._is_window_auto_configured or (
-            use_window_feature
-            and self._window_sensor_entity_id is not None
-            and self._window_delay_sec is not None
-            and self._window_action is not None
+            use_window_feature and self._window_sensor_entity_id is not None and self._window_delay_sec is not None and self._window_action is not None
         ):
             self._is_configured = True
             self._window_state = STATE_UNKNOWN
@@ -201,9 +192,7 @@ class FeatureWindowManager(BaseFeatureManager):
                 long_enough = False
 
             if not long_enough:
-                _LOGGER.debug(
-                    "Window delay condition is not satisfied. Ignore window event"
-                )
+                _LOGGER.debug("Window delay condition is not satisfied. Ignore window event")
                 self._window_state = old_state.state or STATE_OFF
                 return
 
@@ -215,9 +204,7 @@ class FeatureWindowManager(BaseFeatureManager):
 
             _LOGGER.debug("%s - Window ByPass is : %s", self, self._is_window_bypass)
             if self._is_window_bypass:
-                _LOGGER.info(
-                    "%s - Window ByPass is activated. Ignore window event", self
-                )
+                _LOGGER.info("%s - Window ByPass is activated. Ignore window event", self)
                 # We change tne state but we don't apply the change
                 self._window_state = new_state.state
             else:
@@ -259,10 +246,7 @@ class FeatureWindowManager(BaseFeatureManager):
 
             # default to TURN_OFF
             elif self._window_action in [CONF_WINDOW_TURN_OFF]:
-                if (
-                    self._vtherm.last_central_mode != CENTRAL_MODE_STOPPED
-                    and self._vtherm.hvac_off_reason == HVAC_OFF_REASON_WINDOW_DETECTION
-                ):
+                if self._vtherm.last_central_mode != CENTRAL_MODE_STOPPED and self._vtherm.hvac_off_reason == HVAC_OFF_REASON_WINDOW_DETECTION:
                     self._vtherm.set_hvac_off_reason(None)
                     await self._vtherm.restore_hvac_mode(True)
             elif self._window_action in [CONF_WINDOW_FAN_ONLY]:
@@ -277,13 +261,9 @@ class FeatureWindowManager(BaseFeatureManager):
                 )
                 return False
         else:
-            _LOGGER.info(
-                "%s - Window is open. Apply window action %s", self, self._window_action
-            )
+            _LOGGER.info("%s - Window is open. Apply window action %s", self, self._window_action)
             if self._window_action == CONF_WINDOW_TURN_OFF and not self._vtherm.is_on:
-                _LOGGER.debug(
-                    "%s is already off. Forget turning off VTherm due to window detection"
-                )
+                _LOGGER.debug("%s is already off. Forget turning off VTherm due to window detection")
                 self._window_state = new_state
                 return False
 
@@ -300,25 +280,12 @@ class FeatureWindowManager(BaseFeatureManager):
                 ]:
                     self._vtherm.save_target_temp()
 
-            if (
-                self._window_action == CONF_WINDOW_FAN_ONLY
-                and HVACMode.FAN_ONLY in self._vtherm.hvac_modes
-            ):
+            if self._window_action == CONF_WINDOW_FAN_ONLY and HVACMode.FAN_ONLY in self._vtherm.hvac_modes:
                 await self._vtherm.async_set_hvac_mode(HVACMode.FAN_ONLY)
-            elif (
-                self._window_action == CONF_WINDOW_FROST_TEMP
-                and self._vtherm.is_preset_configured(PRESET_FROST_PROTECTION)
-            ):
-                await self._vtherm.change_target_temperature(
-                    self._vtherm.find_preset_temp(PRESET_FROST_PROTECTION)
-                )
-            elif (
-                self._window_action == CONF_WINDOW_ECO_TEMP
-                and self._vtherm.is_preset_configured(PRESET_ECO)
-            ):
-                await self._vtherm.change_target_temperature(
-                    self._vtherm.find_preset_temp(PRESET_ECO)
-                )
+            elif self._window_action == CONF_WINDOW_FROST_TEMP and self._vtherm.is_preset_configured(PRESET_FROST_PROTECTION):
+                await self._vtherm.change_target_temperature(self._vtherm.find_preset_temp(PRESET_FROST_PROTECTION))
+            elif self._window_action == CONF_WINDOW_ECO_TEMP and self._vtherm.is_preset_configured(PRESET_ECO):
+                await self._vtherm.change_target_temperature(self._vtherm.find_preset_temp(PRESET_ECO))
             else:  # default is to turn_off
                 self._vtherm.set_hvac_off_reason(HVAC_OFF_REASON_WINDOW_DETECTION)
                 await self._vtherm.async_set_hvac_mode(HVACMode.OFF)
@@ -337,9 +304,7 @@ class FeatureWindowManager(BaseFeatureManager):
 
         async def deactivate_window_auto(auto=False):
             """Deactivation of the Window auto state"""
-            _LOGGER.warning(
-                "%s - End auto detection of open window slope=%.3f", self, slope
-            )
+            _LOGGER.warning("%s - End auto detection of open window slope=%.3f", self, slope)
             # Send an event
             cause = "max duration expiration" if auto else "end of slope alert"
             self._vtherm.send_event(
@@ -380,15 +345,8 @@ class FeatureWindowManager(BaseFeatureManager):
             )
             return None
 
-        if (
-            self._window_auto_algo.is_window_open_detected()
-            and self._window_auto_state in [STATE_UNKNOWN, STATE_OFF]
-            and self._vtherm.hvac_mode != HVACMode.OFF
-        ):
-            if (
-                self._vtherm.proportional_algorithm
-                and self._vtherm.proportional_algorithm.on_percent <= 0.0
-            ):
+        if self._window_auto_algo.is_window_open_detected() and self._window_auto_state in [STATE_UNKNOWN, STATE_OFF] and self._vtherm.hvac_mode != HVACMode.OFF:
+            if self._vtherm.proportional_algorithm and self._vtherm.proportional_algorithm.on_percent <= 0.0:
                 _LOGGER.info(
                     "%s - Start auto detection of open window slope=%.3f but no heating detected (on_percent<=0). Forget the event",
                     self,
@@ -396,9 +354,7 @@ class FeatureWindowManager(BaseFeatureManager):
                 )
                 return dearm_window_auto
 
-            _LOGGER.warning(
-                "%s - Start auto detection of open window slope=%.3f", self, slope
-            )
+            _LOGGER.warning("%s - Start auto detection of open window slope=%.3f", self, slope)
 
             # Send an event
             self._vtherm.send_event(
@@ -417,10 +373,7 @@ class FeatureWindowManager(BaseFeatureManager):
                 dearm_window_auto,
             )
 
-        elif (
-            self._window_auto_algo.is_window_close_detected()
-            and self._window_auto_state == STATE_ON
-        ):
+        elif self._window_auto_algo.is_window_close_detected() and self._window_auto_state == STATE_ON:
             await deactivate_window_auto(False)
 
         # For testing purpose we need to return the inner function
@@ -505,9 +458,7 @@ class FeatureWindowManager(BaseFeatureManager):
     @property
     def is_window_detected(self) -> bool:
         """Return true if the presence is configured and presence sensor is OFF"""
-        return self._is_configured and (
-            self._window_state == STATE_ON or self._window_auto_state == STATE_ON
-        )
+        return self._is_configured and (self._window_state == STATE_ON or self._window_auto_state == STATE_ON)
 
     @property
     def window_sensor_entity_id(self) -> bool:

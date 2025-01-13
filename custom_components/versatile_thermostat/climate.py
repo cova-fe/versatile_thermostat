@@ -39,18 +39,14 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the VersatileThermostat thermostat with config flow."""
-    _LOGGER.debug(
-        "Calling async_setup_entry entry=%s, data=%s", entry.entry_id, entry.data
-    )
+    _LOGGER.debug("Calling async_setup_entry entry=%s, data=%s", entry.entry_id, entry.data)
 
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
 
     unique_id = entry.entry_id
     name = entry.data.get(CONF_NAME)
     vt_type = entry.data.get(CONF_THERMOSTAT_TYPE)
-    have_valve_regulation = (
-        entry.data.get(CONF_AUTO_REGULATION_MODE) == CONF_AUTO_REGULATION_VALVE
-    )
+    have_valve_regulation = entry.data.get(CONF_AUTO_REGULATION_MODE) == CONF_AUTO_REGULATION_VALVE
 
     if vt_type == CONF_THERMOSTAT_CENTRAL_CONFIG:
         # Initialize the central power manager
@@ -84,9 +80,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_SET_PRESENCE,
         {
-            vol.Required("presence"): vol.In(
-                [STATE_ON, STATE_OFF, STATE_HOME, STATE_NOT_HOME]
-            ),
+            vol.Required("presence"): vol.In([STATE_ON, STATE_OFF, STATE_HOME, STATE_NOT_HOME]),
         },
         "service_set_presence",
     )
@@ -122,9 +116,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_SET_AUTO_REGULATION_MODE,
         {
-            vol.Required("auto_regulation_mode"): vol.In(
-                ["None", "Light", "Medium", "Strong", "Slow", "Expert"]
-            ),
+            vol.Required("auto_regulation_mode"): vol.In(["None", "Light", "Medium", "Strong", "Slow", "Expert"]),
         },
         "service_set_auto_regulation_mode",
     )
@@ -132,9 +124,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_SET_AUTO_FAN_MODE,
         {
-            vol.Required("auto_fan_mode"): vol.In(
-                ["None", "Low", "Medium", "High", "Turbo"]
-            ),
+            vol.Required("auto_fan_mode"): vol.In(["None", "Low", "Medium", "High", "Turbo"]),
         },
         "service_set_auto_fan_mode",
     )

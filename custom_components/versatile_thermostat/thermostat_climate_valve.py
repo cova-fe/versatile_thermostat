@@ -42,9 +42,7 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
         )
     )
 
-    def __init__(
-        self, hass: HomeAssistant, unique_id: str, name: str, entry_infos: ConfigData
-    ):
+    def __init__(self, hass: HomeAssistant, unique_id: str, name: str, entry_infos: ConfigData):
         """Initialize the ThermostatOverClimateValve class"""
         _LOGGER.debug("%s - creating a ThermostatOverClimateValve VTherm", name)
         self._underlyings_valve_regulation: list[UnderlyingValveRegulation] = []
@@ -64,16 +62,8 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
 
         super().post_init(config_entry)
 
-        self._auto_regulation_dpercent = (
-            config_entry.get(CONF_AUTO_REGULATION_DTEMP)
-            if config_entry.get(CONF_AUTO_REGULATION_DTEMP) is not None
-            else 0.0
-        )
-        self._auto_regulation_period_min = (
-            config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN)
-            if config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN) is not None
-            else 0
-        )
+        self._auto_regulation_dpercent = config_entry.get(CONF_AUTO_REGULATION_DTEMP) if config_entry.get(CONF_AUTO_REGULATION_DTEMP) is not None else 0.0
+        self._auto_regulation_period_min = config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN) if config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN) is not None else 0
 
         # Initialization of the TPI algo
         self._prop_algorithm = PropAlgorithm(
@@ -92,9 +82,7 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
         self._min_opening_degrees = config_entry.get(CONF_MIN_OPENING_DEGREES, None)
         min_opening_degrees_list = []
         if self._min_opening_degrees:
-            min_opening_degrees_list = [
-                int(x.strip()) for x in self._min_opening_degrees.split(",")
-            ]
+            min_opening_degrees_list = [int(x.strip()) for x in self._min_opening_degrees.split(",")]
 
         for idx, _ in enumerate(config_entry.get(CONF_UNDERLYING_LIST)):
             offset = offset_list[idx] if idx < len(offset_list) else None
@@ -108,11 +96,7 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
                 opening_degree_entity_id=opening,
                 closing_degree_entity_id=closing,
                 climate_underlying=self._underlyings[idx],
-                min_opening_degree=(
-                    min_opening_degrees_list[idx]
-                    if idx < len(min_opening_degrees_list)
-                    else 0
-                ),
+                min_opening_degree=(min_opening_degrees_list[idx] if idx < len(min_opening_degrees_list) else 0),
             )
             self._underlyings_valve_regulation.append(under)
 
@@ -121,48 +105,27 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
         """Custom attributes"""
         super().update_custom_attributes()
 
-        self._attr_extra_state_attributes["have_valve_regulation"] = (
-            self.have_valve_regulation
-        )
+        self._attr_extra_state_attributes["have_valve_regulation"] = self.have_valve_regulation
 
-        self._attr_extra_state_attributes["underlyings_valve_regulation"] = [
-            underlying.valve_entity_ids
-            for underlying in self._underlyings_valve_regulation
-        ]
+        self._attr_extra_state_attributes["underlyings_valve_regulation"] = [underlying.valve_entity_ids for underlying in self._underlyings_valve_regulation]
 
-        self._attr_extra_state_attributes["on_percent"] = (
-            self._prop_algorithm.on_percent
-        )
+        self._attr_extra_state_attributes["on_percent"] = self._prop_algorithm.on_percent
         self._attr_extra_state_attributes["power_percent"] = self.power_percent
-        self._attr_extra_state_attributes["on_time_sec"] = (
-            self._prop_algorithm.on_time_sec
-        )
-        self._attr_extra_state_attributes["off_time_sec"] = (
-            self._prop_algorithm.off_time_sec
-        )
+        self._attr_extra_state_attributes["on_time_sec"] = self._prop_algorithm.on_time_sec
+        self._attr_extra_state_attributes["off_time_sec"] = self._prop_algorithm.off_time_sec
         self._attr_extra_state_attributes["cycle_min"] = self._cycle_min
         self._attr_extra_state_attributes["function"] = self._proportional_function
         self._attr_extra_state_attributes["tpi_coef_int"] = self._tpi_coef_int
         self._attr_extra_state_attributes["tpi_coef_ext"] = self._tpi_coef_ext
 
-        self._attr_extra_state_attributes["min_opening_degrees"] = (
-            self._min_opening_degrees
-        )
+        self._attr_extra_state_attributes["min_opening_degrees"] = self._min_opening_degrees
 
-        self._attr_extra_state_attributes["valve_open_percent"] = (
-            self.valve_open_percent
-        )
+        self._attr_extra_state_attributes["valve_open_percent"] = self.valve_open_percent
 
-        self._attr_extra_state_attributes["auto_regulation_dpercent"] = (
-            self._auto_regulation_dpercent
-        )
-        self._attr_extra_state_attributes["auto_regulation_period_min"] = (
-            self._auto_regulation_period_min
-        )
+        self._attr_extra_state_attributes["auto_regulation_dpercent"] = self._auto_regulation_dpercent
+        self._attr_extra_state_attributes["auto_regulation_period_min"] = self._auto_regulation_period_min
         self._attr_extra_state_attributes["last_calculation_timestamp"] = (
-            self._last_calculation_timestamp.astimezone(self._current_tz).isoformat()
-            if self._last_calculation_timestamp
-            else None
+            self._last_calculation_timestamp.astimezone(self._current_tz).isoformat() if self._last_calculation_timestamp else None
         )
 
         self.async_write_ha_state()
@@ -201,26 +164,14 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
             self._hvac_mode or HVACMode.OFF,
         )
 
-        new_valve_percent = round(
-            max(0, min(self.proportional_algorithm.on_percent, 1)) * 100
-        )
+        new_valve_percent = round(max(0, min(self.proportional_algorithm.on_percent, 1)) * 100)
 
         # Issue 533 - don't filter with dtemp if valve should be close. Else it will never close
         if new_valve_percent < self._auto_regulation_dpercent:
             new_valve_percent = 0
 
-        dpercent = (
-            new_valve_percent - self._valve_open_percent
-            if self._valve_open_percent is not None
-            else 0
-        )
-        if (
-            self._last_calculation_timestamp is not None
-            and new_valve_percent > 0
-            and -1 * self._auto_regulation_dpercent
-            <= dpercent
-            < self._auto_regulation_dpercent
-        ):
+        dpercent = new_valve_percent - self._valve_open_percent if self._valve_open_percent is not None else 0
+        if self._last_calculation_timestamp is not None and new_valve_percent > 0 and -1 * self._auto_regulation_dpercent <= dpercent < self._auto_regulation_dpercent:
             _LOGGER.debug(
                 "%s - do not calculate TPI because regulation_dpercent (%.1f) is not exceeded",
                 self,
@@ -229,10 +180,7 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
 
             return
 
-        if (
-            self._last_calculation_timestamp is not None
-            and self._valve_open_percent == new_valve_percent
-        ):
+        if self._last_calculation_timestamp is not None and self._valve_open_percent == new_valve_percent:
             _LOGGER.debug("%s - no change in valve_open_percent.", self)
             return
 
@@ -293,10 +241,7 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
     def device_actives(self) -> int:
         """Calculate the number of active devices"""
         if self.is_device_active:
-            return [
-                under.opening_degree_entity_id
-                for under in self._underlyings_valve_regulation
-            ]
+            return [under.opening_degree_entity_id for under in self._underlyings_valve_regulation]
         else:
             return []
 

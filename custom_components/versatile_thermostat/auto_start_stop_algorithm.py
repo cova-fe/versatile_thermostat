@@ -97,8 +97,7 @@ class AutoStartStopDetectionAlgorithm:
             return AUTO_START_STOP_ACTION.NONE
 
         _LOGGER.debug(
-            "%s - calculate_action: hvac_mode=%s, saved_hvac_mode=%s, "
-            "target_temp=%s, current_temp=%s, slope_min=%s at %s",
+            "%s - calculate_action: hvac_mode=%s, saved_hvac_mode=%s, " "target_temp=%s, current_temp=%s, slope_min=%s at %s",
             self,
             hvac_mode,
             saved_hvac_mode,
@@ -124,8 +123,7 @@ class AutoStartStopDetectionAlgorithm:
             # ignore two calls too near (< 24 sec)
             if dtmin <= 0.2:
                 _LOGGER.debug(
-                    "%s - new calculation of auto_start_stop (%s) "
-                    "is too near to the last one (%s). Forget it",
+                    "%s - new calculation of auto_start_stop (%s) " "is too near to the last one (%s). Forget it",
                     self,
                     now,
                     self._last_calculation_date,
@@ -152,18 +150,12 @@ class AutoStartStopDetectionAlgorithm:
         # Calculate the number of minute from last_switch
         nb_minutes_since_last_switch = 999
         if self._last_switch_date is not None:
-            nb_minutes_since_last_switch = (
-                now - self._last_switch_date
-            ).total_seconds() / 60
+            nb_minutes_since_last_switch = (now - self._last_switch_date).total_seconds() / 60
 
         # Check to turn-off
         # When we hit the threshold, that mean we can turn off
         if hvac_mode == HVACMode.HEAT:
-            if (
-                self._accumulated_error <= -self._error_threshold
-                and temp_at_dt >= target_temp + TEMP_HYSTERESIS
-                and nb_minutes_since_last_switch >= self._dt
-            ):
+            if self._accumulated_error <= -self._error_threshold and temp_at_dt >= target_temp + TEMP_HYSTERESIS and nb_minutes_since_last_switch >= self._dt:
                 _LOGGER.info(
                     "%s - We need to stop, heating will not be needed for a long time.",
                     self,
@@ -175,11 +167,7 @@ class AutoStartStopDetectionAlgorithm:
                 return AUTO_START_STOP_ACTION.NONE
 
         if hvac_mode == HVACMode.COOL:
-            if (
-                self._accumulated_error >= self._error_threshold
-                and temp_at_dt <= target_temp - TEMP_HYSTERESIS
-                and nb_minutes_since_last_switch >= self._dt
-            ):
+            if self._accumulated_error >= self._error_threshold and temp_at_dt <= target_temp - TEMP_HYSTERESIS and nb_minutes_since_last_switch >= self._dt:
                 _LOGGER.info(
                     "%s - We need to stop, cooling will not be needed for a long time.",
                     self,
@@ -195,10 +183,7 @@ class AutoStartStopDetectionAlgorithm:
 
         # check to turn on
         if hvac_mode == HVACMode.OFF and saved_hvac_mode == HVACMode.HEAT:
-            if (
-                temp_at_dt <= target_temp - TEMP_HYSTERESIS
-                and nb_minutes_since_last_switch >= self._dt
-            ):
+            if temp_at_dt <= target_temp - TEMP_HYSTERESIS and nb_minutes_since_last_switch >= self._dt:
                 _LOGGER.info(
                     "%s - We need to start, because it will be time to heat",
                     self,
@@ -212,10 +197,7 @@ class AutoStartStopDetectionAlgorithm:
                 )
                 return AUTO_START_STOP_ACTION.NONE
         if hvac_mode == HVACMode.OFF and saved_hvac_mode == HVACMode.COOL:
-            if (
-                temp_at_dt >= target_temp + TEMP_HYSTERESIS
-                and nb_minutes_since_last_switch >= self._dt
-            ):
+            if temp_at_dt >= target_temp + TEMP_HYSTERESIS and nb_minutes_since_last_switch >= self._dt:
                 _LOGGER.info(
                     "%s - We need to start, because it will be time to cool",
                     self,

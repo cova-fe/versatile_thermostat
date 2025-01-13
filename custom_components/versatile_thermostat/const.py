@@ -398,11 +398,7 @@ class CONF_WINDOW_ACTIONS(StrEnum):
     ECO_TEMP = "window_eco_temp"
 
 
-SUPPORT_FLAGS = (
-    ClimateEntityFeature.TARGET_TEMPERATURE
-    | ClimateEntityFeature.TURN_OFF
-    | ClimateEntityFeature.TURN_ON
-)
+SUPPORT_FLAGS = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
 
 SERVICE_SET_PRESENCE = "set_presence"
 SERVICE_SET_PRESET_TEMPERATURE = "set_preset_temperature"
@@ -469,9 +465,7 @@ class RegulationParamSlow:
         # error will always be reset when the temp briefly crosses
         # from/to below/above the target
     )
-    accumulated_error_threshold: float = (
-        2.0 * 288
-    )  # this allows up to 2°C long term offset in both directions
+    accumulated_error_threshold: float = 2.0 * 288  # this allows up to 2°C long term offset in both directions
 
 
 class RegulationParamLight:
@@ -548,14 +542,7 @@ def send_vtherm_event(hass, event_type: EventType, entity, data: dict):
 def get_safe_float(hass, entity_id: str):
     """Get a safe float state value for an entity.
     Return None if entity is not available"""
-    if (
-        entity_id is None
-        or not (state := hass.states.get(entity_id))
-        or state.state is None
-        or state.state == "None"
-        or state.state == "unknown"
-        or state.state == "unavailable"
-    ):
+    if entity_id is None or not (state := hass.states.get(entity_id)) or state.state is None or state.state == "None" or state.state == "unknown" or state.state == "unavailable":
         return None
     float_val = float(state.state)
     return None if math.isinf(float_val) or not math.isfinite(float_val) else float_val

@@ -55,9 +55,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the VersatileThermostat binary sensors with config flow."""
-    _LOGGER.debug(
-        "Calling async_setup_entry entry=%s, data=%s", entry.entry_id, entry.data
-    )
+    _LOGGER.debug("Calling async_setup_entry entry=%s, data=%s", entry.entry_id, entry.data)
 
     unique_id = entry.entry_id
     name = entry.data.get(CONF_NAME)
@@ -193,10 +191,7 @@ class WindowBinarySensor(VersatileThermostatBaseEntity, BinarySensorEntity):
             STATE_ON,
             STATE_OFF,
         ] or self.my_climate.window_auto_state in [STATE_ON, STATE_OFF]:
-            self._attr_is_on = (
-                self.my_climate.window_state == STATE_ON
-                or self.my_climate.window_auto_state == STATE_ON
-            )
+            self._attr_is_on = self.my_climate.window_state == STATE_ON or self.my_climate.window_auto_state == STATE_ON
             if old_state != self._attr_is_on:
                 self.async_write_ha_state()
         return
@@ -354,12 +349,8 @@ class CentralBoilerBinarySensor(BinarySensorEntity):
         self._device_name = entry_infos.get(CONF_NAME)
         self._entities = []
         self._hass = hass
-        self._service_activate = check_and_extract_service_configuration(
-            entry_infos.get(CONF_CENTRAL_BOILER_ACTIVATION_SRV)
-        )
-        self._service_deactivate = check_and_extract_service_configuration(
-            entry_infos.get(CONF_CENTRAL_BOILER_DEACTIVATION_SRV)
-        )
+        self._service_activate = check_and_extract_service_configuration(entry_infos.get(CONF_CENTRAL_BOILER_ACTIVATION_SRV))
+        self._service_deactivate = check_and_extract_service_configuration(entry_infos.get(CONF_CENTRAL_BOILER_DEACTIVATION_SRV))
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -410,10 +401,7 @@ class CentralBoilerBinarySensor(BinarySensorEntity):
         # Listen to all VTherm state change
         api: VersatileThermostatAPI = VersatileThermostatAPI.get_vtherm_api(self._hass)
 
-        if (
-            api.nb_active_device_for_boiler_entity
-            and api.nb_active_device_for_boiler_threshold_entity
-        ):
+        if api.nb_active_device_for_boiler_entity and api.nb_active_device_for_boiler_threshold_entity:
             listener_cancel = async_track_state_change_event(
                 self._hass,
                 [
@@ -439,19 +427,14 @@ class CentralBoilerBinarySensor(BinarySensorEntity):
 
         _LOGGER.debug("%s - calculating the new central boiler state", self)
         api: VersatileThermostatAPI = VersatileThermostatAPI.get_vtherm_api(self._hass)
-        if (
-            api.nb_active_device_for_boiler is None
-            or api.nb_active_device_for_boiler_threshold is None
-        ):
+        if api.nb_active_device_for_boiler is None or api.nb_active_device_for_boiler_threshold is None:
             _LOGGER.warning(
                 "%s - the entities to calculate the boiler state are not initialized. Boiler state cannot be calculated",
                 self,
             )
             return False
 
-        active = (
-            api.nb_active_device_for_boiler >= api.nb_active_device_for_boiler_threshold
-        )
+        active = api.nb_active_device_for_boiler >= api.nb_active_device_for_boiler_threshold
 
         if self._attr_is_on != active:
             try:

@@ -65,24 +65,18 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the VersatileThermostat sensors with config flow."""
-    _LOGGER.debug(
-        "Calling async_setup_entry entry=%s, data=%s", entry.entry_id, entry.data
-    )
+    _LOGGER.debug("Calling async_setup_entry entry=%s, data=%s", entry.entry_id, entry.data)
 
     unique_id = entry.entry_id
     name = entry.data.get(CONF_NAME)
     vt_type = entry.data.get(CONF_THERMOSTAT_TYPE)
-    have_valve_regulation = (
-        entry.data.get(CONF_AUTO_REGULATION_MODE) == CONF_AUTO_REGULATION_VALVE
-    )
+    have_valve_regulation = entry.data.get(CONF_AUTO_REGULATION_MODE) == CONF_AUTO_REGULATION_VALVE
 
     entities = None
 
     if vt_type == CONF_THERMOSTAT_CENTRAL_CONFIG:
         if entry.data.get(CONF_USE_CENTRAL_BOILER_FEATURE):
-            entities = [
-                NbActiveDeviceForBoilerSensor(hass, unique_id, name, entry.data)
-            ]
+            entities = [NbActiveDeviceForBoilerSensor(hass, unique_id, name, entry.data)]
     else:
         entities = [
             LastTemperatureSensor(hass, unique_id, name, entry.data),
@@ -103,19 +97,11 @@ async def async_setup_entry(
             entities.append(OnTimeSensor(hass, unique_id, name, entry.data))
             entities.append(OffTimeSensor(hass, unique_id, name, entry.data))
 
-        if (
-            entry.data.get(CONF_THERMOSTAT_TYPE) == CONF_THERMOSTAT_VALVE
-            or have_valve_regulation
-        ):
+        if entry.data.get(CONF_THERMOSTAT_TYPE) == CONF_THERMOSTAT_VALVE or have_valve_regulation:
             entities.append(ValveOpenPercentSensor(hass, unique_id, name, entry.data))
 
-        if (
-            entry.data.get(CONF_THERMOSTAT_TYPE) == CONF_THERMOSTAT_CLIMATE
-            and not have_valve_regulation
-        ):
-            entities.append(
-                RegulatedTemperatureSensor(hass, unique_id, name, entry.data)
-            )
+        if entry.data.get(CONF_THERMOSTAT_TYPE) == CONF_THERMOSTAT_CLIMATE and not have_valve_regulation:
+            entities.append(RegulatedTemperatureSensor(hass, unique_id, name, entry.data))
 
     if entities:
         async_add_entities(entities, True)
@@ -190,12 +176,8 @@ class MeanPowerSensor(VersatileThermostatBaseEntity, SensorEntity):
         """Called when my climate have change"""
         # _LOGGER.debug("%s - climate state change", self._attr_unique_id)
 
-        if math.isnan(
-            float(self.my_climate.power_manager.mean_cycle_power)
-        ) or math.isinf(self.my_climate.power_manager.mean_cycle_power):
-            raise ValueError(
-                f"Sensor has illegal state {self.my_climate.power_manager.mean_cycle_power}"
-            )
+        if math.isnan(float(self.my_climate.power_manager.mean_cycle_power)) or math.isinf(self.my_climate.power_manager.mean_cycle_power):
+            raise ValueError(f"Sensor has illegal state {self.my_climate.power_manager.mean_cycle_power}")
 
         old_state = self._attr_native_value
         self._attr_native_value = round(
@@ -248,11 +230,7 @@ class OnPercentSensor(VersatileThermostatBaseEntity, SensorEntity):
         """Called when my climate have change"""
         # _LOGGER.debug("%s - climate state change", self._attr_unique_id)
 
-        on_percent = (
-            float(self.my_climate.proportional_algorithm.on_percent)
-            if self.my_climate and self.my_climate.proportional_algorithm
-            else None
-        )
+        on_percent = float(self.my_climate.proportional_algorithm.on_percent) if self.my_climate and self.my_climate.proportional_algorithm else None
         if on_percent is None:
             return
 
@@ -260,9 +238,7 @@ class OnPercentSensor(VersatileThermostatBaseEntity, SensorEntity):
             raise ValueError(f"Sensor has illegal state {on_percent}")
 
         old_state = self._attr_native_value
-        self._attr_native_value = round(
-            on_percent * 100.0, self.suggested_display_precision
-        )
+        self._attr_native_value = round(on_percent * 100.0, self.suggested_display_precision)
         if old_state != self._attr_native_value:
             self.async_write_ha_state()
         return
@@ -349,11 +325,7 @@ class OnTimeSensor(VersatileThermostatBaseEntity, SensorEntity):
         """Called when my climate have change"""
         # _LOGGER.debug("%s - climate state change", self._attr_unique_id)
 
-        on_time = (
-            float(self.my_climate.proportional_algorithm.on_time_sec)
-            if self.my_climate and self.my_climate.proportional_algorithm
-            else None
-        )
+        on_time = float(self.my_climate.proportional_algorithm.on_time_sec) if self.my_climate and self.my_climate.proportional_algorithm else None
 
         if on_time is None:
             return
@@ -398,11 +370,7 @@ class OffTimeSensor(VersatileThermostatBaseEntity, SensorEntity):
         """Called when my climate have change"""
         # _LOGGER.debug("%s - climate state change", self._attr_unique_id)
 
-        off_time = (
-            float(self.my_climate.proportional_algorithm.off_time_sec)
-            if self.my_climate and self.my_climate.proportional_algorithm
-            else None
-        )
+        off_time = float(self.my_climate.proportional_algorithm.off_time_sec) if self.my_climate and self.my_climate.proportional_algorithm else None
         if off_time is None:
             return
 
@@ -649,9 +617,7 @@ class NbActiveDeviceForBoilerSensor(SensorEntity):
     """Representation of the threshold of the number of VTherm
     which should be active to activate the boiler"""
 
-    _entity_component_unrecorded_attributes = SensorEntity._entity_component_unrecorded_attributes.union(  # pylint: disable=protected-access
-        frozenset({"active_device_ids"})
-    )
+    _entity_component_unrecorded_attributes = SensorEntity._entity_component_unrecorded_attributes.union(frozenset({"active_device_ids"}))  # pylint: disable=protected-access
 
     def __init__(self, hass: HomeAssistant, unique_id, name, entry_infos) -> None:
         """Initialize the energy sensor"""
@@ -710,9 +676,7 @@ class NbActiveDeviceForBoilerSensor(SensorEntity):
         if self.hass.state == CoreState.running:
             await _async_startup_internal()
         else:
-            self.hass.bus.async_listen_once(
-                EVENT_HOMEASSISTANT_START, _async_startup_internal
-            )
+            self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup_internal)
 
     async def listen_vtherms_entities(self):
         """Initialize the listening of state change of VTherms"""
@@ -763,11 +727,7 @@ class NbActiveDeviceForBoilerSensor(SensorEntity):
 
             # For underlying climate, we need to observe also the hvac_action if available
             new_hvac_action = new_state.attributes.get("hvac_action")
-            old_hvac_action = (
-                old_state.attributes.get("hvac_action")
-                if old_state is not None
-                else None
-            )
+            old_hvac_action = old_state.attributes.get("hvac_action") if old_state is not None else None
 
             # Filter events that are not interested for us
             if (

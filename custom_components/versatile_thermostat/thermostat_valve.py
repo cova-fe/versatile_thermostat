@@ -27,9 +27,7 @@ from .underlyings import UnderlyingValve
 _LOGGER = logging.getLogger(__name__)
 
 
-class ThermostatOverValve(
-    BaseThermostat[UnderlyingValve]
-):  # pylint: disable=abstract-method
+class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=abstract-method
     """Representation of a class for a Versatile Thermostat over a Valve"""
 
     _entity_component_unrecorded_attributes = BaseThermostat._entity_component_unrecorded_attributes.union(  # pylint: disable=protected-access
@@ -51,9 +49,7 @@ class ThermostatOverValve(
         )
     )
 
-    def __init__(
-        self, hass: HomeAssistant, unique_id: str, name: str, config_entry: ConfigData
-    ):
+    def __init__(self, hass: HomeAssistant, unique_id: str, name: str, config_entry: ConfigData):
         """Initialize the thermostat over switch."""
         self._valve_open_percent: int = 0
         self._last_calculation_timestamp: datetime | None = None
@@ -82,16 +78,8 @@ class ThermostatOverValve(
 
         super().post_init(config_entry)
 
-        self._auto_regulation_dpercent = (
-            config_entry.get(CONF_AUTO_REGULATION_DTEMP)
-            if config_entry.get(CONF_AUTO_REGULATION_DTEMP) is not None
-            else 0.0
-        )
-        self._auto_regulation_period_min = (
-            config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN)
-            if config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN) is not None
-            else 0
-        )
+        self._auto_regulation_dpercent = config_entry.get(CONF_AUTO_REGULATION_DTEMP) if config_entry.get(CONF_AUTO_REGULATION_DTEMP) is not None else 0.0
+        self._auto_regulation_period_min = config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN) if config_entry.get(CONF_AUTO_REGULATION_PERIOD_MIN) is not None else 0
 
         self._prop_algorithm = PropAlgorithm(
             self._proportional_function,
@@ -106,9 +94,7 @@ class ThermostatOverValve(
         lst_valves = config_entry.get(CONF_UNDERLYING_LIST)
 
         for _, valve in enumerate(lst_valves):
-            self._underlyings.append(
-                UnderlyingValve(hass=self._hass, thermostat=self, valve_entity_id=valve)
-            )
+            self._underlyings.append(UnderlyingValve(hass=self._hass, thermostat=self, valve_entity_id=valve))
 
         self._should_relaunch_control_heating = False
 
@@ -121,11 +107,7 @@ class ThermostatOverValve(
 
         # Add listener to all underlying entities
         for valve in self._underlyings:
-            self.async_on_remove(
-                async_track_state_change_event(
-                    self.hass, [valve.entity_id], self._async_valve_changed
-                )
-            )
+            self.async_on_remove(async_track_state_change_event(self.hass, [valve.entity_id], self._async_valve_changed))
 
         # Start the control_heating
         # starts a cycle
@@ -143,50 +125,30 @@ class ThermostatOverValve(
         This method just log the change. It changes nothing to avoid loops.
         """
         new_state = event.data.get("new_state")
-        _LOGGER.debug(
-            "%s - _async_valve_changed new_state is %s", self, new_state.state
-        )
+        _LOGGER.debug("%s - _async_valve_changed new_state is %s", self, new_state.state)
 
     @overrides
     def update_custom_attributes(self):
         """Custom attributes"""
         super().update_custom_attributes()
-        self._attr_extra_state_attributes["valve_open_percent"] = (
-            self.valve_open_percent
-        )
+        self._attr_extra_state_attributes["valve_open_percent"] = self.valve_open_percent
         self._attr_extra_state_attributes["is_over_valve"] = self.is_over_valve
 
-        self._attr_extra_state_attributes["underlying_entities"] = [
-            underlying.entity_id for underlying in self._underlyings
-        ]
+        self._attr_extra_state_attributes["underlying_entities"] = [underlying.entity_id for underlying in self._underlyings]
 
-        self._attr_extra_state_attributes["on_percent"] = (
-            self._prop_algorithm.on_percent
-        )
-        self._attr_extra_state_attributes["on_time_sec"] = (
-            self._prop_algorithm.on_time_sec
-        )
-        self._attr_extra_state_attributes["off_time_sec"] = (
-            self._prop_algorithm.off_time_sec
-        )
+        self._attr_extra_state_attributes["on_percent"] = self._prop_algorithm.on_percent
+        self._attr_extra_state_attributes["on_time_sec"] = self._prop_algorithm.on_time_sec
+        self._attr_extra_state_attributes["off_time_sec"] = self._prop_algorithm.off_time_sec
         self._attr_extra_state_attributes["cycle_min"] = self._cycle_min
         self._attr_extra_state_attributes["function"] = self._proportional_function
         self._attr_extra_state_attributes["tpi_coef_int"] = self._tpi_coef_int
         self._attr_extra_state_attributes["tpi_coef_ext"] = self._tpi_coef_ext
-        self._attr_extra_state_attributes["auto_regulation_dpercent"] = (
-            self._auto_regulation_dpercent
-        )
-        self._attr_extra_state_attributes["auto_regulation_period_min"] = (
-            self._auto_regulation_period_min
-        )
+        self._attr_extra_state_attributes["auto_regulation_dpercent"] = self._auto_regulation_dpercent
+        self._attr_extra_state_attributes["auto_regulation_period_min"] = self._auto_regulation_period_min
         self._attr_extra_state_attributes["last_calculation_timestamp"] = (
-            self._last_calculation_timestamp.astimezone(self._current_tz).isoformat()
-            if self._last_calculation_timestamp
-            else None
+            self._last_calculation_timestamp.astimezone(self._current_tz).isoformat() if self._last_calculation_timestamp else None
         )
-        self._attr_extra_state_attributes["calculated_on_percent"] = (
-            self._prop_algorithm.calculated_on_percent
-        )
+        self._attr_extra_state_attributes["calculated_on_percent"] = self._prop_algorithm.calculated_on_percent
 
         self.async_write_ha_state()
         _LOGGER.debug(
@@ -222,21 +184,14 @@ class ThermostatOverValve(
             self._hvac_mode or HVACMode.OFF,
         )
 
-        new_valve_percent = round(
-            max(0, min(self.proportional_algorithm.on_percent, 1)) * 100
-        )
+        new_valve_percent = round(max(0, min(self.proportional_algorithm.on_percent, 1)) * 100)
 
         # Issue 533 - don't filter with dtemp if valve should be close. Else it will never close
         if new_valve_percent < self._auto_regulation_dpercent:
             new_valve_percent = 0
 
         dpercent = new_valve_percent - self.valve_open_percent
-        if (
-            new_valve_percent > 0
-            and -1 * self._auto_regulation_dpercent
-            <= dpercent
-            < self._auto_regulation_dpercent
-        ):
+        if new_valve_percent > 0 and -1 * self._auto_regulation_dpercent <= dpercent < self._auto_regulation_dpercent:
             _LOGGER.debug(
                 "%s - do not calculate TPI because regulation_dpercent (%.1f) is not exceeded",
                 self,
@@ -269,9 +224,7 @@ class ThermostatOverValve(
 
         added_energy = 0
         if not self.is_over_climate and self.power_manager.mean_cycle_power is not None:
-            added_energy = (
-                self.power_manager.mean_cycle_power * float(self._cycle_min) / 60.0
-            )
+            added_energy = self.power_manager.mean_cycle_power * float(self._cycle_min) / 60.0
 
         if self._total_energy is None:
             self._total_energy = added_energy

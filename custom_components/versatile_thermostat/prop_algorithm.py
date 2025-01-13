@@ -64,9 +64,7 @@ class PropAlgorithm:
                 cycle_min,
                 minimal_activation_delay,
             )
-            raise TypeError(
-                "TPI parameters are not set correctly. VTherm will not work as expected. Please reconfigure it correctly. See previous log for values"
-            )
+            raise TypeError("TPI parameters are not set correctly. VTherm will not work as expected. Please reconfigure it correctly. See previous log for values")
 
         self._vtherm_entity_id = vtherm_entity_id
         self._function = function_type
@@ -102,24 +100,13 @@ class PropAlgorithm:
         else:
             if hvac_mode == HVACMode.COOL:
                 delta_temp = current_temp - target_temp
-                delta_ext_temp = (
-                    ext_current_temp - target_temp
-                    if ext_current_temp is not None
-                    else 0
-                )
+                delta_ext_temp = ext_current_temp - target_temp if ext_current_temp is not None else 0
             else:
                 delta_temp = target_temp - current_temp
-                delta_ext_temp = (
-                    target_temp - ext_current_temp
-                    if ext_current_temp is not None
-                    else 0
-                )
+                delta_ext_temp = target_temp - ext_current_temp if ext_current_temp is not None else 0
 
             if self._function == PROPORTIONAL_FUNCTION_TPI:
-                self._calculated_on_percent = (
-                    self._tpi_coef_int * delta_temp
-                    + self._tpi_coef_ext * delta_ext_temp
-                )
+                self._calculated_on_percent = self._tpi_coef_int * delta_temp + self._tpi_coef_ext * delta_ext_temp
             else:
                 _LOGGER.warning(
                     "%s - Proportional algorithm: unknown %s function. Heating will be disabled",
@@ -190,18 +177,14 @@ class PropAlgorithm:
 
     def set_safety(self, default_on_percent: float):
         """Set a default value for on_percent (used for safety mode)"""
-        _LOGGER.info(
-            "%s - Proportional Algo - set security to ON", self._vtherm_entity_id
-        )
+        _LOGGER.info("%s - Proportional Algo - set security to ON", self._vtherm_entity_id)
         self._security = True
         self._default_on_percent = default_on_percent
         self._calculate_internal()
 
     def unset_safety(self):
         """Unset the safety mode"""
-        _LOGGER.info(
-            "%s - Proportional Algo - set security to OFF", self._vtherm_entity_id
-        )
+        _LOGGER.info("%s - Proportional Algo - set security to OFF", self._vtherm_entity_id)
         self._security = False
         self._calculate_internal()
 

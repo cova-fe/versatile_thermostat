@@ -159,16 +159,14 @@ class UnderlyingEntity:
         """Prevent the underlying to be on but thermostat is off"""
         if hvac_mode == HVACMode.OFF and self.is_device_active:
             _LOGGER.info(
-                "%s - The hvac mode is OFF, but the underlying device is ON. "
-                "Turning off device %s",
+                "%s - The hvac mode is OFF, but the underlying device is ON. " "Turning off device %s",
                 self,
                 self._entity_id,
             )
             await self.set_hvac_mode(hvac_mode)
         elif hvac_mode != HVACMode.OFF and not self.is_device_active:
             _LOGGER.info(
-                "%s - The hvac mode is %s, but the underlying device is not ON. "
-                "Turning on device %s if needed",
+                "%s - The hvac mode is %s, but the underlying device is not ON. " "Turning on device %s if needed",
                 self,
                 hvac_mode,
                 self._entity_id,
@@ -176,9 +174,7 @@ class UnderlyingEntity:
             await self.set_hvac_mode(hvac_mode)
 
     # override to be able to mock the call
-    def call_later(
-        self, hass: HomeAssistant, delay_sec: int, called_method
-    ) -> CALLBACK_TYPE:
+    def call_later(self, hass: HomeAssistant, delay_sec: int, called_method) -> CALLBACK_TYPE:
         """Call the method after a delay"""
         return async_call_later(hass, delay_sec, called_method)
 
@@ -286,9 +282,7 @@ class UnderlyingSwitch(UnderlyingEntity):
     def is_device_active(self):
         """If the toggleable device is currently active."""
         real_state = self._hass.states.is_state(self._entity_id, STATE_ON)
-        return (self.is_inversed and not real_state) or (
-            not self.is_inversed and real_state
-        )
+        return (self.is_inversed and not real_state) or (not self.is_inversed and real_state)
 
     async def _keep_alive_callback(self):
         """Keep alive: Turn on if already turned on, turn off if already turned off."""
@@ -300,8 +294,7 @@ class UnderlyingSwitch(UnderlyingEntity):
         if state is None or state.state == STATE_UNAVAILABLE:
             if timer.is_ready():
                 _LOGGER.warning(
-                    "Entity %s is not available (state: %s). Will keep trying "
-                    "keep alive calls, but won't log this condition every time.",
+                    "Entity %s is not available (state: %s). Will keep trying " "keep alive calls, but won't log this condition every time.",
                     self._entity_id,
                     state.state if state else "None",
                 )
@@ -371,8 +364,7 @@ class UnderlyingSwitch(UnderlyingEntity):
     ):
         """Starting cycle for switch"""
         _LOGGER.debug(
-            "%s - Starting new cycle hvac_mode=%s on_time_sec=%d "
-            "off_time_sec=%d force=%s",
+            "%s - Starting new cycle hvac_mode=%s on_time_sec=%d " "off_time_sec=%d force=%s",
             self,
             hvac_mode,
             on_time_sec,
@@ -391,8 +383,7 @@ class UnderlyingSwitch(UnderlyingEntity):
                 self._cancel_cycle()
             else:
                 _LOGGER.debug(
-                    "%s - A previous cycle is already running and no force "
-                    "-> waits for its end",
+                    "%s - A previous cycle is already running and no force " "-> waits for its end",
                     self,
                 )
                 # self._should_relaunch_control_heating = True
@@ -402,9 +393,7 @@ class UnderlyingSwitch(UnderlyingEntity):
         # If we should heat, starts the cycle with delay
         if self._hvac_mode in [HVACMode.HEAT, HVACMode.COOL] and on_time_sec > 0:
             # Starts the cycle after the initial delay
-            self._async_cancel_cycle = self.call_later(
-                self._hass, self._initial_delay_sec, self._turn_on_later
-            )
+            self._async_cancel_cycle = self.call_later(self._hass, self._initial_delay_sec, self._turn_on_later)
             _LOGGER.debug("%s - _async_cancel_cycle=%s", self, self._async_cancel_cycle)
 
         # if we not heat but device is active
@@ -430,8 +419,7 @@ class UnderlyingSwitch(UnderlyingEntity):
     async def _turn_on_later(self, _):
         """Turn the heater on after a delay"""
         _LOGGER.debug(
-            "%s - calling turn_on_later hvac_mode=%s, "
-            "should_relaunch_later=%s off_time_sec=%d",
+            "%s - calling turn_on_later hvac_mode=%s, " "should_relaunch_later=%s off_time_sec=%d",
             self,
             self._hvac_mode,
             self._should_relaunch_control_heating,
@@ -473,8 +461,7 @@ class UnderlyingSwitch(UnderlyingEntity):
     async def _turn_off_later(self, _):
         """Turn the heater off and call the next cycle after the delay"""
         _LOGGER.debug(
-            "%s - calling turn_off_later hvac_mode=%s, "
-            "should_relaunch_later=%s off_time_sec=%d",
+            "%s - calling turn_off_later hvac_mode=%s, " "should_relaunch_later=%s off_time_sec=%d",
             self,
             self._hvac_mode,
             self._should_relaunch_control_heating,
@@ -583,8 +570,7 @@ class UnderlyingClimate(UnderlyingEntity):
 
         if self._underlying_climate.hvac_mode == hvac_mode:
             _LOGGER.debug(
-                "%s - hvac_mode is already is requested state %s. "
-                "Do not send any command",
+                "%s - hvac_mode is already is requested state %s. " "Do not send any command",
                 self,
                 self._underlying_climate.hvac_mode,
             )
@@ -709,14 +695,8 @@ class UnderlyingClimate(UnderlyingEntity):
 
         hvac_action = self._underlying_climate.hvac_action
         if hvac_action is None:
-            target = (
-                self.underlying_target_temperature
-                or self._thermostat.target_temperature
-            )
-            current = (
-                self.underlying_current_temperature
-                or self._thermostat.current_temperature
-            )
+            target = self.underlying_target_temperature or self._thermostat.target_temperature
+            current = self.underlying_current_temperature or self._thermostat.current_temperature
             hvac_mode = self.hvac_mode
 
             _LOGGER.debug(
@@ -878,10 +858,7 @@ class UnderlyingClimate(UnderlyingEntity):
             return value
 
         # Gets the min_temp and max_temp
-        if (
-            self._underlying_climate.min_temp is not None
-            and self._underlying_climate is not None
-        ):
+        if self._underlying_climate.min_temp is not None and self._underlying_climate is not None:
             min_val = TemperatureConverter.convert(
                 self._underlying_climate.min_temp,
                 self._underlying_climate.temperature_unit,
@@ -900,9 +877,7 @@ class UnderlyingClimate(UnderlyingEntity):
 
         if new_value != value:
             _LOGGER.info(
-                "%s - Target temp have been updated due min, "
-                "max of the underlying entity. new_value=%.0f "
-                "value=%.0f min=%.0f max=%.0f",
+                "%s - Target temp have been updated due min, " "max of the underlying entity. new_value=%.0f " "value=%.0f min=%.0f max=%.0f",
                 self,
                 new_value,
                 value,
@@ -1037,9 +1012,7 @@ class UnderlyingValve(UnderlyingEntity):
 
         if new_value != value:
             _LOGGER.info(
-                "%s - Valve open percent have been updated due min, "
-                "max of the underlying entity. new_value=%.0f value=%.0f "
-                "min=%.0f max=%.0f",
+                "%s - Valve open percent have been updated due min, " "max of the underlying entity. new_value=%.0f value=%.0f " "min=%.0f max=%.0f",
                 self,
                 new_value,
                 value,
@@ -1059,9 +1032,7 @@ class UnderlyingValve(UnderlyingEntity):
         self._percent_open = caped_val
         # Send the new command to valve via a service call
 
-        _LOGGER.info(
-            "%s - Setting valve ouverture percent to %s", self, self._percent_open
-        )
+        _LOGGER.info("%s - Setting valve ouverture percent to %s", self, self._percent_open)
         # Send the change to the valve, in background
         # self._hass.create_task(self.send_percent_open())
         await self.send_percent_open()
@@ -1104,27 +1075,15 @@ class UnderlyingValveRegulation(UnderlyingValve):
     async def send_percent_open(self):
         """Send the percent open to the underlying valve"""
         if not self._is_min_max_initialized:
-            _LOGGER.debug(
-                "%s - initialize min offset_calibration and max open_degree", self
-            )
-            self._max_opening_degree = self._hass.states.get(
-                self._opening_degree_entity_id
-            ).attributes.get("max")
+            _LOGGER.debug("%s - initialize min offset_calibration and max open_degree", self)
+            self._max_opening_degree = self._hass.states.get(self._opening_degree_entity_id).attributes.get("max")
 
             if self.have_offset_calibration_entity:
-                self._min_offset_calibration = self._hass.states.get(
-                    self._offset_calibration_entity_id
-                ).attributes.get("min")
-                self._max_offset_calibration = self._hass.states.get(
-                    self._offset_calibration_entity_id
-                ).attributes.get("max")
+                self._min_offset_calibration = self._hass.states.get(self._offset_calibration_entity_id).attributes.get("min")
+                self._max_offset_calibration = self._hass.states.get(self._offset_calibration_entity_id).attributes.get("max")
 
             self._is_min_max_initialized = self._max_opening_degree is not None and (
-                not self.have_offset_calibration_entity
-                or (
-                    self._min_offset_calibration is not None
-                    and self._max_offset_calibration is not None
-                )
+                not self.have_offset_calibration_entity or (self._min_offset_calibration is not None and self._max_offset_calibration is not None)
             )
 
         if not self._is_min_max_initialized:
@@ -1137,11 +1096,7 @@ class UnderlyingValveRegulation(UnderlyingValve):
 
         # Caclulate percent_open
         if self._percent_open >= 1:
-            self._percent_open = round(
-                self._min_opening_degree
-                + (self._percent_open
-                   * (100 - self._min_opening_degree) / 100)
-                )
+            self._percent_open = round(self._min_opening_degree + (self._percent_open * (100 - self._min_opening_degree) / 100))
         else:
             self._percent_open = 0
 
@@ -1160,15 +1115,9 @@ class UnderlyingValveRegulation(UnderlyingValve):
         offset = None
         if self.have_offset_calibration_entity:
             if (
-                (local_temp := self._climate_underlying.underlying_current_temperature)
-                is not None
+                (local_temp := self._climate_underlying.underlying_current_temperature) is not None
                 and (room_temp := self._thermostat.current_temperature) is not None
-                and (
-                    current_offset := get_safe_float(
-                        self._hass, self._offset_calibration_entity_id
-                    )
-                )
-                is not None
+                and (current_offset := get_safe_float(self._hass, self._offset_calibration_entity_id)) is not None
             ):
                 offset = min(
                     self._max_offset_calibration,
@@ -1178,13 +1127,10 @@ class UnderlyingValveRegulation(UnderlyingValve):
                     ),
                 )
 
-                await self._send_value_to_number(
-                    self._offset_calibration_entity_id, offset
-                )
+                await self._send_value_to_number(self._offset_calibration_entity_id, offset)
 
         _LOGGER.debug(
-            "%s - valve regulation - I have sent offset_calibration=%s "
-            "opening_degree=%s closing_degree=%s",
+            "%s - valve regulation - I have sent offset_calibration=%s " "opening_degree=%s closing_degree=%s",
             self,
             offset,
             self._percent_open,

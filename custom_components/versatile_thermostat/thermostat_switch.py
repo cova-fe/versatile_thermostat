@@ -102,11 +102,7 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
 
         # Add listener to all underlying entities
         for switch in self._underlyings:
-            self.async_on_remove(
-                async_track_state_change_event(
-                    self.hass, [switch.entity_id], self._async_switch_changed
-                )
-            )
+            self.async_on_remove(async_track_state_change_event(self.hass, [switch.entity_id], self._async_switch_changed))
             switch.startup()
 
         self.hass.create_task(self.async_control_heating())
@@ -121,27 +117,17 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
         self._attr_extra_state_attributes["is_inversed"] = self.is_inversed
         self._attr_extra_state_attributes["keep_alive_sec"] = under0.keep_alive_sec
 
-        self._attr_extra_state_attributes["underlying_entities"] = [
-            underlying.entity_id for underlying in self._underlyings
-        ]
+        self._attr_extra_state_attributes["underlying_entities"] = [underlying.entity_id for underlying in self._underlyings]
 
-        self._attr_extra_state_attributes["on_percent"] = (
-            self._prop_algorithm.on_percent
-        )
+        self._attr_extra_state_attributes["on_percent"] = self._prop_algorithm.on_percent
         self._attr_extra_state_attributes["power_percent"] = self.power_percent
-        self._attr_extra_state_attributes["on_time_sec"] = (
-            self._prop_algorithm.on_time_sec
-        )
-        self._attr_extra_state_attributes["off_time_sec"] = (
-            self._prop_algorithm.off_time_sec
-        )
+        self._attr_extra_state_attributes["on_time_sec"] = self._prop_algorithm.on_time_sec
+        self._attr_extra_state_attributes["off_time_sec"] = self._prop_algorithm.off_time_sec
         self._attr_extra_state_attributes["cycle_min"] = self._cycle_min
         self._attr_extra_state_attributes["function"] = self._proportional_function
         self._attr_extra_state_attributes["tpi_coef_int"] = self._tpi_coef_int
         self._attr_extra_state_attributes["tpi_coef_ext"] = self._tpi_coef_ext
-        self._attr_extra_state_attributes["calculated_on_percent"] = (
-            self._prop_algorithm.calculated_on_percent
-        )
+        self._attr_extra_state_attributes["calculated_on_percent"] = self._prop_algorithm.calculated_on_percent
 
         self.async_write_ha_state()
         _LOGGER.debug(
@@ -174,9 +160,7 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
 
         added_energy = 0
         if not self.is_over_climate and self.power_manager.mean_cycle_power is not None:
-            added_energy = (
-                self.power_manager.mean_cycle_power * float(self._cycle_min) / 60.0
-            )
+            added_energy = self.power_manager.mean_cycle_power * float(self._cycle_min) / 60.0
 
         if self._total_energy is None:
             self._total_energy = added_energy
